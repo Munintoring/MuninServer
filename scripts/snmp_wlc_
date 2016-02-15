@@ -1,0 +1,184 @@
+#!/usr/bin/perl
+use diagnostics;
+use strict;
+use warnings;
+
+my $nas	= "10.25.0.5";
+my $SNMPCommunity = "public";
+my $SNMPPort = "161";
+
+my $graph = undef;
+$0 =~ /snmp_wlc_(.+)*$/;
+unless ($graph = $1) {
+  exit 2;
+}
+
+my $snmpgetinfo;
+my $bsnMobileStationStatus	= ".1.3.6.1.4.1.14179.2.1.4.1.9";
+my $bsnMobileStationProtocol	= ".1.3.6.1.4.1.14179.2.1.4.1.25";
+my $bsnMobileStationEapType	= ".1.3.6.1.4.1.14179.2.1.4.1.32";
+my $bsnMobileStationCcxVersion	= ".1.3.6.1.4.1.14179.2.1.4.1.33";
+
+if ($graph =~ 'bsnMobileStationStatus') {
+	my ($idle, $aaaPending, $authenticated, $associated, $powersave, $disassociated, $tobedeleted, $probing, $blacklisted) = (0,0,0,0,0,0,0,0,0);
+	$snmpgetinfo = `/usr/bin/snmpwalk -v 2c -c public 10.25.0.5 $bsnMobileStationStatus`;
+	
+	my @lines = split /\n/, $snmpgetinfo;
+	  foreach my $line (@lines) {
+	      $idle++          if $line =~ /0$/;
+	      $aaaPending++    if $line =~ /1$/;
+	      $authenticated++ if $line =~ /2$/;
+	      $associated++    if $line =~ /3$/;
+	      $powersave++     if $line =~ /4$/;
+	      $disassociated++ if $line =~ /5$/;
+	      $tobedeleted++   if $line =~ /6$/;
+	      $probing++       if $line =~ /7$/;
+	      $blacklisted++   if $line =~ /8$/;
+	}
+	
+	if ($ARGV[0] && $ARGV[0] eq "config") {
+	  print "graph_args --base 1000 -l 0\n";
+	  print "graph_title Station status\n";
+	  print "graph_category WLC\n";
+	  print "graph_info INFO\n";
+	  print "graph_vlabel Clients\n";
+	  print "idle.label Total clients idle\n";
+	  print "aaaPending.label Total clients aaaPending\n";
+	  print "authenticated.label Total clients authenticated\n";
+	  print "associated.label Total clients associated\n";
+	  print "powersave.label Total clients powersave\n";
+	  print "disassociated.label Total clients disassociated\n";
+	  print "tobedeleted.label Total clients tobedeleted\n";
+	  print "probing.label Total clients probing\n";
+	  print "blacklisted.label Total clients blacklisted\n";
+	  exit;
+	}
+
+	print "idle.value " . "$idle" . "\n";
+	print "aaaPending.value " . "$aaaPending" . "\n";
+	print "authenticated.value " . "$authenticated" . "\n";
+	print "associated.value " . "$associated" . "\n";
+	print "powersave.value " . "$powersave" . "\n";
+	print "disassociated.value " . "$disassociated" . "\n";
+	print "tobedeleted.value " . "$tobedeleted" . "\n";
+	print "probing.value " . "$probing" . "\n";
+	print "blacklisted.value " . "$blacklisted" . "\n";
+}
+if ($graph =~ 'bsnMobileStationProtocol') {
+	my ($dot11a, $dot11b, $dot11g, $unknown, $mobile, $dot11n24, $dot11n5) = (0,0,0,0,0,0,0);
+	$snmpgetinfo = `/usr/bin/snmpwalk -v 2c -c public 10.25.0.5 $bsnMobileStationProtocol`;
+	
+	my @lines = split /\n/, $snmpgetinfo;
+	  foreach my $line (@lines) {
+	      $dot11a++   if $line =~ /1$/;
+	      $dot11b++   if $line =~ /2$/;
+	      $dot11g++   if $line =~ /3$/;
+	      $unknown++  if $line =~ /4$/;
+	      $mobile++   if $line =~ /5$/;
+	      $dot11n24++ if $line =~ /6$/;
+	      $dot11n5++  if $line =~ /7$/;
+	}
+	
+	if ($ARGV[0] && $ARGV[0] eq "config") {
+	  print "graph_args --base 1000 -l 0\n";
+	  print "graph_title Station radio type\n";
+	  print "graph_category WLC\n";
+	  print "graph_info INFO\n";
+	  print "graph_vlabel Clients\n";
+	  print "dot11a.label Total clients on 5 GHz 802.11a\n";
+	  print "dot11b.label Total clients on 2.4 GHz 802.11b\n";
+	  print "dot11g.label Total clients on 2.4 GHz 802.11g\n";
+	  print "unknown.label Total unknown clients\n";
+	  print "dot11n24.label Total clients on 2.4 GHz 802.11n\n";
+	  print "dot11n5.label Total clients on 5 GHz 802.11n\n";
+	  exit;
+	}
+
+	print "dot11a.value " . "$dot11a" . "\n";
+	print "dot11b.value " . "$dot11b" . "\n";
+	print "dot11g.value " . "$dot11g" . "\n";
+	print "unknown.value " . "$unknown" . "\n";
+	print "mobile.value " . "$mobile" . "\n";
+	print "dot11n24.value " . "$dot11n24" . "\n";
+	print "dot11n5.value " . "$dot11n5" . "\n";
+}
+if ($graph =~ 'bsnMobileStationEapType') {
+	my ($eapTls, $ttls, $peap, $leap, $speke, $eapFast, $notavailable, $unknown) = (0,0,0,0,0,0,0,0);
+	$snmpgetinfo = `/usr/bin/snmpwalk -v 2c -c public 10.25.0.5 $bsnMobileStationEapType`;
+	
+	my @lines = split /\n/, $snmpgetinfo;
+	  foreach my $line (@lines) {
+	      $eapTls++       if $line =~ /0$/;
+	      $ttls++         if $line =~ /1$/;
+	      $peap++         if $line =~ /2$/;
+	      $leap++         if $line =~ /3$/;
+	      $speke++        if $line =~ /4$/;
+	      $eapFast++      if $line =~ /5$/;
+	      $notavailable++ if $line =~ /6$/;
+	      $unknown++      if $line =~ /7$/;
+	}
+	
+	if ($ARGV[0] && $ARGV[0] eq "config") {
+	  print "graph_args --base 1000 -l 0\n";
+	  print "graph_title Station EAP type\n";
+	  print "graph_category WLC\n";
+	  print "graph_info INFO\n";
+	  print "graph_vlabel Clients\n";
+	  print "eapTls.label Total clients using eapType: eap-TLS\n";
+	  print "ttls.label Total clients using eapType: eap-TTLS\n";
+	  print "peap.label Total clients using eapType: PEAP\n";
+	  print "leap.label Total clients using eapType: leap\n";
+	  print "speke.label Total clients using eapType: speke\n";
+	  print "eapFast.label Total clients using eapType: eap-Fast\n";
+	  print "notavailable.label Total clients using eapType: notavailable\n";
+	  print "unknown.label Total clients using eapType: unknown\n";
+	  exit;
+	}
+
+	print "eapTls.value " . "$eapTls" . "\n";
+	print "ttls.value " . "$ttls" . "\n";
+	print "peap.value " . "$peap" . "\n";
+	print "leap.value " . "$leap" . "\n";
+	print "speke.value " . "$speke" . "\n";
+	print "eapFast.value " . "$eapFast" . "\n";
+	print "notavailable.value " . "$notavailable" . "\n";
+	print "unknown.value " . "$unknown" . "\n";
+}
+if ($graph =~ 'bsnMobileStationCcxVersion') {
+	my ($notSupported, $ccxv1, $ccxv2, $ccxv3, $ccxv4, $ccxv5) = (0,0,0,0,0,0);
+	$snmpgetinfo = `/usr/bin/snmpwalk -v 2c -c public 10.25.0.5 $bsnMobileStationCcxVersion`;
+	
+	my @lines = split /\n/, $snmpgetinfo;
+	  foreach my $line (@lines) {
+	      $notSupported++ if $line =~ /0$/;
+	      $ccxv1++ if $line =~ /1$/;
+	      $ccxv2++ if $line =~ /2$/;
+	      $ccxv3++ if $line =~ /3$/;
+	      $ccxv4++ if $line =~ /4$/;
+	      $ccxv5++ if $line =~ /5$/;
+	}
+	
+	if ($ARGV[0] && $ARGV[0] eq "config") {
+	  print "graph_args --base 1000 -l 0\n";
+	  print "graph_title Station CCX version\n";
+	  print "graph_category WLC\n";
+	  print "graph_info INFO\n";
+	  print "graph_vlabel Clients\n";
+	  print "graph_info Cisco Compatible Extensions\n";
+	  print "notSupported.label Total clients without ccx support \n";
+	  print "ccxv1.label Total clients with ccxv1 support \n";
+	  print "ccxv2.label Total clients with ccxv2 support \n";
+	  print "ccxv3.label Total clients with ccxv3 support \n";
+	  print "ccxv4.label Total clients with ccxv4 support \n";
+	  print "ccxv5.label Total clients with ccxv5 support \n";
+	  exit;
+	}
+
+	print "notSupported.value " . "$notSupported" . "\n";
+	print "ccxv1.value " . "$ccxv1" . "\n";
+	print "ccxv2.value " . "$ccxv2" . "\n";
+	print "ccxv3.value " . "$ccxv3" . "\n";
+	print "ccxv4.value " . "$ccxv4" . "\n";
+	print "ccxv5.value " . "$ccxv5" . "\n";
+}
+
