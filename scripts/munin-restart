@@ -1,0 +1,13 @@
+#!/bin/bash
+ 
+service munin-node restart
+echo "munin-node restart : ok"
+service apache2 restart
+echo "apache2 restart: ok"
+ 
+/etc/init.d/munin stop
+/etc/init.d/munin start
+echo "munin restart : ok"
+ 
+su - munin --shell=/bin/bash
+

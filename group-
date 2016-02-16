@@ -62,3 +62,4 @@ pulse:x:122:
 pulse-access:x:123:
 zwijn:x:1000:
 sambashare:x:124:zwijn
+munin:x:125:

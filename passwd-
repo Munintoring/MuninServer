@@ -35,3 +35,4 @@ pulse:x:115:122:PulseAudio daemon,,,:/var/run/pulse:/bin/false
 zwijn:x:1000:1000:Zwijn,,,:/home/zwijn:/bin/bash
 munin:x:116:125::/var/lib/munin:/bin/false
 sshd:x:117:65534::/var/run/sshd:/usr/sbin/nologin
+guest-dtKtvu:x:118:126:Guest,,,:/:/bin/bash
