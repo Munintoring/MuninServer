@@ -24,7 +24,9 @@ SyslogFacility AUTH
 LogLevel INFO
 
 # Authentication:
+
 LoginGraceTime 120
+PermitRootLogin without-password
 PermitRootLogin yes
 StrictModes yes
 
@@ -88,4 +90,4 @@ Subsystem sftp /usr/lib/openssh/sftp-server
 UsePAM yes
 
 
-AllowUsers root zwijn
+AllowUsers root zwijn ring
