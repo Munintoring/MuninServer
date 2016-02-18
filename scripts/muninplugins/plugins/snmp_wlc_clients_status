@@ -1,0 +1,46 @@
+#!/usr/bin/perl
+use diagnostics;
+use strict;
+use warnings;
+
+my $snmpgetinfo = `/usr/bin/snmpwalk -v 2c -c public 192.168.1.2 1.3.6.1.4.1.14179.2.1.4.1.9`;
+my ($idle, $aaaPending, $authenticated, $associated, $powersave, $disassociated, $tobedeleted, $probing, $blacklisted) = (0,0,0,0,0,0,0,0,0);
+my @lines = split /\n/, $snmpgetinfo;
+	foreach my $line (@lines) {
+		$idle++		if  $line =~ /0$/;
+		$aaaPending++    if $line =~ /1$/;
+		$authenticated++ if $line =~ /2$/;
+		$associated++    if $line =~ /3$/;
+		$powersave++     if $line =~ /4$/;
+	      	$disassociated++ if $line =~ /5$/;
+	      	$tobedeleted++   if $line =~ /6$/;
+	      	$probing++       if $line =~ /7$/;
+	      	$blacklisted++   if $line =~ /8$/;
+	}
+	if ($ARGV[0] && $ARGV[0] eq "config") {
+	  print "graph_args --base 1000 -l 0\n";
+	  print "graph_title Station status\n";
+	  print "graph_category WLC\n";
+	  print "graph_info INFO\n";
+	  print "graph_vlabel Clients\n";
+	  print "idle.label Total clients idle\n";
+	  print "aaaPending.label Total clients aaaPending\n";
+	  print "authenticated.label Total clients authenticated\n";
+	  print "associated.label Total clients associated\n";
+	  print "powersave.label Total clients powersave\n";
+	  print "disassociated.label Total clients disassociated\n";
+	  print "tobedeleted.label Total clients tobedeleted\n";
+	  print "probing.label Total clients probing\n";
+	  print "blacklisted.label Total clients blacklisted\n";
+	  print "update_rate 60";  
+	  exit;
+ 	}
+	  print "idle.value " . "$idle" . "\n";
+          print "aaaPending.value " . "$aaaPending" . "\n";
+          print "authenticated.value " . "$authenticated" . "\n";
+          print "associated.value " . "$associated" . "\n";
+          print "powersave.value " . "$powersave" . "\n";
+          print "disassociated.value " . "$disassociated" . "\n";
+          print "tobedeleted.value " . "$tobedeleted" . "\n";
+          print "probing.value " . "$probing" . "\n";
+          print "blacklisted.value " . "$blacklisted" . "\n";

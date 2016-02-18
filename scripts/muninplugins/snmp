@@ -1,0 +1,284 @@
+# howto
+
+ftp://ftp.cisco.com/pub/mibs/supportlists/wlc/wlc-supportlist.html
+ftp://ftp.cisco.com/pub/mibs/oid/
+
+-> ftp://ftp.cisco.com/pub/mibs/oid/CISCO-LWAPP-AP-MIB.oid
+	-> "cLApName"		"1.3.6.1.4.1.9.9.513.1.1.1.1.5"
+
+
+# get AP name
+/usr/bin/snmpwalk -v 2c -c public 10.110.1.10 1.3.6.1.4.1.9.9.513.1.1.1.1.5
+SNMPv2-SMI::enterprises.9.9.513.1.1.1.1.5.0.29.112.1.220.32 = STRING: "SA-AP-01"  # 0.29.112.1.220.32 = MAC in decimal
+SNMPv2-SMI::enterprises.9.9.513.1.1.1.1.5.0.30.19.27.249.160 = STRING: "EH-AP-09"
+SNMPv2-SMI::enterprises.9.9.513.1.1.1.1.5.0.30.19.28.5.128 = STRING: "EH-AP-04"
+SNMPv2-SMI::enterprises.9.9.513.1.1.1.1.5.0.30.19.28.14.80 = STRING: "EH-AP-05"
+SNMPv2-SMI::enterprises.9.9.513.1.1.1.1.5.0.30.19.28.70.176 = STRING: "GT-AP-21"
+SNMPv2-SMI::enterprises.9.9.513.1.1.1.1.5.0.30.19.28.70.208 = STRING: "GT-AP-05"
+SNMPv2-SMI::enterprises.9.9.513.1.1.1.1.5.0.30.19.28.71.16 = STRING: "GT-AP-01"
+SNMPv2-SMI::enterprises.9.9.513.1.1.1.1.5.0.30.19.28.71.48 = STRING: "GT-AP-10"
+SNMPv2-SMI::enterprises.9.9.513.1.1.1.1.5.0.30.19.109.192.0 = STRING: "EH-AP-01"
+SNMPv2-SMI::enterprises.9.9.513.1.1.1.1.5.0.30.19.109.192.160 = STRING: "EH-AP-12"
+
+#ftp://ftp.cisco.com/pub/mibs/oid/CISCO-LWAPP-DOT11-CLIENT-MIB.oid
+# MAC of AP which have associated clients
+/usr/bin/snmpwalk -v 2c -c public 10.110.1.10 1.3.6.1.4.1.9.9.599.1.3.1.1.8
+SNMPv2-SMI::enterprises.9.9.599.1.3.1.1.8.0.28.191.145.52.106 = Hex-STRING: 00 21 55 AC 85 B0 
+SNMPv2-SMI::enterprises.9.9.599.1.3.1.1.8.0.36.44.54.47.89 = Hex-STRING: 00 1F 9E 41 E4 80 
+SNMPv2-SMI::enterprises.9.9.599.1.3.1.1.8.4.84.83.26.74.217 = Hex-STRING: 00 1F 9E 41 E2 E0 
+SNMPv2-SMI::enterprises.9.9.599.1.3.1.1.8.20.143.198.24.133.126 = Hex-STRING: 00 24 97 2E 44 40 
+SNMPv2-SMI::enterprises.9.9.599.1.3.1.1.8.104.9.39.146.5.13 = Hex-STRING: 00 24 97 2E 44 40 
+SNMPv2-SMI::enterprises.9.9.599.1.3.1.1.8.152.3.216.233.150.203 = Hex-STRING: 00 1F 9E 41 E2 E0 
+SNMPv2-SMI::enterprises.9.9.599.1.3.1.1.8.216.48.98.97.116.117 = Hex-STRING: 00 1E 13 6D D1 20
+
+# cldcClientWlanProfileName 
+/usr/bin/snmpwalk -v 2c -c public 10.110.1.10 1.3.6.1.4.1.9.9.599.1.3.1.1.3
+SNMPv2-SMI::enterprises.9.9.599.1.3.1.1.3.0.28.191.145.52.106 = STRING: "eduroam"
+SNMPv2-SMI::enterprises.9.9.599.1.3.1.1.3.0.36.44.54.47.89 = STRING: "khleuven"
+SNMPv2-SMI::enterprises.9.9.599.1.3.1.1.3.4.84.83.26.74.217 = STRING: "khleuven"
+SNMPv2-SMI::enterprises.9.9.599.1.3.1.1.3.20.143.198.24.133.126 = STRING: "khleuven"
+SNMPv2-SMI::enterprises.9.9.599.1.3.1.1.3.104.9.39.146.5.13 = STRING: "khleuven"
+SNMPv2-SMI::enterprises.9.9.599.1.3.1.1.3.152.3.216.233.150.203 = STRING: "eduroam"
+SNMPv2-SMI::enterprises.9.9.599.1.3.1.1.3.216.48.98.97.116.117 = STRING: "khleuven"
+
+# ftp://ftp.cisco.com/pub/mibs/oid/CISCO-LWAPP-WLAN-MIB.oid
+# cLWlanSsid
+/usr/bin/snmpwalk -v 2c -c public 10.110.1.10 1.3.6.1.4.1.9.9.512.1.1.1.1.4
+SNMPv2-SMI::enterprises.9.9.512.1.1.1.1.4.1 = STRING: "khleuven"
+SNMPv2-SMI::enterprises.9.9.512.1.1.1.1.4.3 = STRING: "khleuven-wifi-help"
+SNMPv2-SMI::enterprises.9.9.512.1.1.1.1.4.4 = STRING: "eduroam"
+SNMPv2-SMI::enterprises.9.9.512.1.1.1.1.4.5 = STRING: "khleuven-wifi-guest"
+
+# ftp://ftp.cisco.com/pub/mibs/oid/AIRESPACE-WIRELESS-MIB.oid
+# bsnAPIfLoadNumOfClients: associated clients per AP - match with AP OID via 1.3.6.1.4.1.9.9.513.1.1.1.1.5
+# /usr/bin/snmpwalk -v 2c -c public 10.110.1.10 1.3.6.1.4.1.14179.2.2.13.1.4
+SNMPv2-SMI::enterprises.14179.2.2.13.1.4.0.29.112.1.220.32.0 = INTEGER: 1
+SNMPv2-SMI::enterprises.14179.2.2.13.1.4.0.29.112.1.220.32.1 = INTEGER: 1
+SNMPv2-SMI::enterprises.14179.2.2.13.1.4.0.30.19.27.249.160.0 = INTEGER: 0
+SNMPv2-SMI::enterprises.14179.2.2.13.1.4.0.30.19.27.249.160.1 = INTEGER: 1
+SNMPv2-SMI::enterprises.14179.2.2.13.1.4.0.30.19.28.5.128.0 = INTEGER: 1
+SNMPv2-SMI::enterprises.14179.2.2.13.1.4.0.30.19.28.5.128.1 = INTEGER: 0
+SNMPv2-SMI::enterprises.14179.2.2.13.1.4.0.30.19.28.14.80.0 = INTEGER: 0
+SNMPv2-SMI::enterprises.14179.2.2.13.1.4.0.30.19.28.14.80.1 = INTEGER: 1
+SNMPv2-SMI::enterprises.14179.2.2.13.1.4.0.30.19.28.70.176.0 = INTEGER: 1
+
+# /usr/bin/snmpwalk -v 2c -c public 10.110.1.10 1.3.6.1.4.1.14179.2.1.4.1.2
+SNMPv2-SMI::enterprises.14179.2.1.4.1.2.0.28.191.145.52.106 = IpAddress: 10.102.100.55
+SNMPv2-SMI::enterprises.14179.2.1.4.1.2.4.84.83.26.74.217 = IpAddress: 10.36.5.160
+SNMPv2-SMI::enterprises.14179.2.1.4.1.2.20.143.198.24.133.126 = IpAddress: 10.36.4.32
+SNMPv2-SMI::enterprises.14179.2.1.4.1.2.104.9.39.146.5.13 = IpAddress: 10.36.10.130
+SNMPv2-SMI::enterprises.14179.2.1.4.1.2.152.3.216.233.150.203 = IpAddress: 10.102.100.228
+SNMPv2-SMI::enterprises.14179.2.1.4.1.2.216.48.98.97.116.117 = IpAddress: 10.36.9.57
+
+# bsnMobileStationSsid
+#/usr/bin/snmpwalk -v 2c -c public 10.110.1.10 1.3.6.1.4.1.14179.2.1.4.1.7
+SNMPv2-SMI::enterprises.14179.2.1.4.1.7.0.28.191.145.52.106 = STRING: "eduroam"
+SNMPv2-SMI::enterprises.14179.2.1.4.1.7.4.84.83.26.74.217 = STRING: "khleuven"
+SNMPv2-SMI::enterprises.14179.2.1.4.1.7.20.143.198.24.133.126 = STRING: "khleuven"
+SNMPv2-SMI::enterprises.14179.2.1.4.1.7.104.9.39.146.5.13 = STRING: "khleuven"
+SNMPv2-SMI::enterprises.14179.2.1.4.1.7.152.3.216.233.150.203 = STRING: "eduroam"
+SNMPv2-SMI::enterprises.14179.2.1.4.1.7.216.48.98.97.116.117 = STRING: "khleuven"
+
+#SSID information        1.3.6.1.4.1.14179.2.1.1.1.2
+/usr/bin/snmpwalk -v 2c -c public 10.110.1.10 1.3.6.1.4.1.14179.2.1.1.1.2
+SNMPv2-SMI::enterprises.14179.2.1.1.1.2.1 = STRING: "khleuven"
+SNMPv2-SMI::enterprises.14179.2.1.1.1.2.3 = STRING: "khleuven-wifi-help"
+SNMPv2-SMI::enterprises.14179.2.1.1.1.2.4 = STRING: "eduroam"
+SNMPv2-SMI::enterprises.14179.2.1.1.1.2.5 = STRING: "khleuven-wifi-guest"
+#number of station connected to ssid     1.3.6.1.4.1.14179.2.1.1.1.38
+/usr/bin/snmpwalk -v 2c -c public 10.110.1.10 1.3.6.1.4.1.14179.2.1.1.1.38
+SNMPv2-SMI::enterprises.14179.2.1.1.1.38.1 = Counter32: 3
+SNMPv2-SMI::enterprises.14179.2.1.1.1.38.3 = Counter32: 0
+SNMPv2-SMI::enterprises.14179.2.1.1.1.38.4 = Counter32: 0
+SNMPv2-SMI::enterprises.14179.2.1.1.1.38.5 = Counter32: 0
+
+number of aps           1.3.6.1.4.1.14179.2.2.13.1.4
+ap name                 1.3.6.1.4.1.14179.2.2.1.1.3
+
+# serial
+/usr/bin/snmpwalk -v 2c -c public 10.110.1.10 1.3.6.1.2.1.47.1.1.1.1.11.1
+SNMPv2-SMI::mib-2.47.1.1.1.1.11.1 = STRING: "FCW1424L0L8"
+# version
+/usr/bin/snmpwalk -v 2c -c public 10.110.1.10 1.3.6.1.2.1.47.1.1.1.1.10.1
+SNMPv2-SMI::mib-2.47.1.1.1.1.10.1 = STRING: "7.0.116.0"
+
+# MAC addresses:
+/etc/munin/plugins# /usr/bin/snmpwalk -v 2c -c public 10.110.1.10 1.3.6.1.4.1.14179.2.2.1.1.1
+SNMPv2-SMI::enterprises.14179.2.2.1.1.1.0.29.112.1.220.32 = Hex-STRING: 00 1D 70 01 DC 20 
+SNMPv2-SMI::enterprises.14179.2.2.1.1.1.0.30.19.27.249.160 = Hex-STRING: 00 1E 13 1B F9 A0 
+SNMPv2-SMI::enterprises.14179.2.2.1.1.1.0.30.19.28.5.128 = Hex-STRING: 00 1E 13 1C 05 80 
+SNMPv2-SMI::enterprises.14179.2.2.1.1.1.0.30.19.28.14.80 = Hex-STRING: 00 1E 13 1C 0E 50 
+SNMPv2-SMI::enterprises.14179.2.2.1.1.1.0.30.19.28.70.176 = Hex-STRING: 00 1E 13 1C 46 B0 
+SNMPv2-SMI::enterprises.14179.2.2.1.1.1.0.30.19.28.70.208 = Hex-STRING: 00 1E 13 1C 46 D0
+
+# AP ip address
+/usr/bin/snmpwalk -v 2c -c public 10.110.1.10 1.3.6.1.4.1.14179.2.2.1.1.19
+SNMPv2-SMI::enterprises.14179.2.2.1.1.19.0.29.112.1.220.32 = IpAddress: 10.110.6.123
+SNMPv2-SMI::enterprises.14179.2.2.1.1.19.0.30.19.27.249.160 = IpAddress: 10.110.6.76
+SNMPv2-SMI::enterprises.14179.2.2.1.1.19.0.30.19.28.5.128 = IpAddress: 10.110.6.70
+SNMPv2-SMI::enterprises.14179.2.2.1.1.19.0.30.19.28.14.80 = IpAddress: 10.110.6.71
+
+
+
+
+
+#AP Mac - AP Mac:
+1.3.6.1.4.1.14179.2.2.1.1.1.0.38.203.209.56.160 = 0026CBD138A0
+(note mac in decimal is part of OID)
+#AP Mac - AP ID:
+1.3.6.1.4.1.14179.2.2.1.1.2.0.38.203.209.56.160 = 2
+#AP Mac - AP Name:
+1.3.6.1.4.1.14179.2.2.1.1.3.0.38.203.209.56.160 = test-1142
+#AP Mac - AP location:
+1.3.6.1.4.1.14179.2.2.1.1.4.0.38.203.209.56.160 = mail.mailt.0.004.labo.gauche
+#AP Mac - AP version:
+1.3.6.1.4.1.14179.2.2.1.1.9.0.38.203.209.56.160 = 12.4.18.0
+#AP Mac - AP model:
+1.3.6.1.4.1.14179.2.2.1.1.16.0.38.203.209.56.160 = AIR-LAP1142N-E-K9
+#AP Mac - AP serial:
+1.3.6.1.4.1.14179.2.2.1.1.17.0.38.203.209.56.160 = FCZ1336W0D3
+#AP Mac - AP IP:
+1.3.6.1.4.1.14179.2.2.1.1.19.0.38.203.209.56.160 = 10.15.207.240
+#AP Mac - AP group:
+1.3.6.1.4.1.14179.2.2.1.1.30.0.38.203.209.56.160 = unimail
+#AP Mac - AP IOS version:
+1.3.6.1.4.1.14179.2.2.1.1.31.0.38.203.209.56.160 = 12.4(21a)JA
+#AP Mac - AP channel:
+1.3.6.1.4.1.14179.2.2.2.1.4.0.38.203.209.56.160.x = 64
+
+#Client inventory:
+#Mac-Mac:
+1.3.6.1.4.1.14179.2.1.4.1.1.0.33.106.85.127.158 = 00216A557F9E
+(note mac in decimal is part of OID)
+#Mac-IP:
+1.3.6.1.4.1.14179.2.1.4.1.2.0.33.106.85.127.158 = 10.15.102.247
+#Mac-Radio:
+1.3.6.1.4.1.14179.2.1.4.1.4.0.33.106.85.127.158 = 0026CBD138A0
+#Mac-SSID:
+1.3.6.1.4.1.14179.2.1.4.1.7.0.33.106.85.127.158 = public-unine
+#Mac-IF:
+1.3.6.1.4.1.14179.2.1.4.1.27.0.33.106.85.127.158 = wlan_a
+#Mac-VLAN:
+1.3.6.1.4.1.14179.2.1.4.1.29.0.33.106.85.127.158 = 102
+#Radio-Mac:
+1.3.6.1.4.1.14179.2.1.5.1.20.0.38.203.209.56.160.0.1.x = 00216A557F9E
+(radio=0026CBD138A0)
+#Mac-RSSI:
+1.3.6.1.4.1.14179.2.1.6.1.1.0.33.106.85.127.158 = -49
+#Mac-SNR:
+1.3.6.1.4.1.14179.2.1.6.1.26.0.33.106.85.127.158 = 46
+
+Orion Internal Name	OID Name					OID Value
+Description		sysDescr					1.3.6.1.2.1.1.1
+HostName		sysName						1.3.6.1.2.1.1.5
+AP_Name			bsnAPName					1.3.6.1.4.1.14179.2.2.1.1.3
+ModelName		bsnAPModel					1.3.6.1.4.1.14179.2.2.1.1.16
+AP_Type			bsnAPType					1.3.6.1.4.1.14179.2.2.1.1.22
+IPAddress		bsnAPStaticIPAddress				1.3.6.1.4.1.14179.2.2.1.1.28
+CurrentChannel		bsnAPIfPhyChannelNumber				1.3.6.1.4.1.14179.2.2.2.1.4
+Clients			bsnApIfNoOfUsers				1.3.6.1.4.1.14179.2.2.2.1.15
+Client_MAC		bsnMobileStationMacAddress			1.3.6.1.4.1.14179.2.1.4.1.1
+Client_IPAddress	bsnMobileStationIpAddress			1.3.6.1.4.1.14179.2.1.4.1.2
+Client_Name		bsnMobileStationUserName			1.3.6.1.4.1.14179.2.1.4.1.3
+Client_APMAC		bsnMobileStationAPMacAddr			1.3.6.1.4.1.14179.2.1.4.1.4
+Client_APIf		bsnMobileStationAPIfSlotId			1.3.6.1.4.1.14179.2.1.4.1.5
+Client_ESSID		bsnMobileStationSsid				1.3.6.1.4.1.14179.2.1.4.1.7
+Client_TotalBytesRx	bsnMobileStationBytesReceived			1.3.6.1.4.1.14179.2.1.6.1.2
+Client_TotalBytesTx	bsnMobileStationBytesSent			1.3.6.1.4.1.14179.2.1.6.1.3
+RadioType		bsnAPIfType					1.3.6.1.4.1.14179.2.2.2.1.2
+TxFragments		bsnAPIfDot11TransmittedFragmentCount		1.3.6.1.4.1.14179.2.2.6.1.1
+TxMulticastFrames	bsnAPIfDot11MulticastTransmittedFrameCount	1.3.6.1.4.1.14179.2.2.6.1.2
+TxRetries		bsnAPIfDot11RetryCount				1.3.6.1.4.1.14179.2.2.6.1.3
+TxMultipleRetries	bsnAPIfDot11MultipleRetryCount			1.3.6.1.4.1.14179.2.2.6.1.4
+RTSSuccess		bsnAPIfDot11RTSSuccessCount			1.3.6.1.4.1.14179.2.2.6.1.6
+RTSFailure		bsnAPIfDot11RTSFailureCount			1.3.6.1.4.1.14179.2.2.6.1.7
+RxAckFailure		bsnAPIfDot11ACKFailureCount			1.3.6.1.4.1.14179.2.2.6.1.8
+RxFragments		bsnAPIfDot11ReceivedFragmentCount		1.3.6.1.4.1.14179.2.2.6.1.9
+RxMulticastFrames	bsnAPIfDot11MulticastReceivedFrameCount		1.3.6.1.4.1.14179.2.2.6.1.10
+RxFCSError		bsnAPIfDot11FCSErrorCount			1.3.6.1.4.1.14179.2.2.6.1.11
+TxFrames		bsnAPIfDot11TransmittedFrameCount		1.3.6.1.4.1.14179.2.2.6.1.12
+TxFailed		bsnAPIfDot11FailedCount				1.3.6.1.4.1.14179.2.2.6.1.33
+Client_Status		bsnMobileStationStatus				1.3.6.1.4.1.14179.2.1.4.1.9
+Client_SignalStrength	bsnMobileStationRSSI				1.3.6.1.4.1.14179.2.1.6.1.1
+Client_TotalPacketsRx	bsnMobileStationPacketsReceived			1.3.6.1.4.1.14179.2.1.6.1.5
+Client_TotalPacketsTx	bsnMobileStationPacketsSent			1.3.6.1.4.1.14179.2.1.6.1.6
+Rogue_RadioType		bsnRogueAPRadioType				1.3.6.1.4.1.14179.2.1.8.1.3
+Rogue_APName		bsnRogueAPAirespaceAPName			1.3.6.1.4.1.14179.2.1.8.1.4
+Rogue_CurrentChannel	bsnRogueAPChannelNumber				1.3.6.1.4.1.14179.2.1.8.1.5
+Rogue_SSID		bsnRogueAPSsid					1.3.6.1.4.1.14179.2.1.8.1.6
+Rogue_SignalStrength	bsnRogueAPAirespaceAPRSSI			1.3.6.1.4.1.14179.2.1.8.1.7
+Rogue_WepMode		bsnRogueAPAirespaceAPWepMode			1.3.6.1.4.1.14179.2.1.8.1.12
+Rogue_WpaMode		bsnRogueAPAirespaceAPWpaMode			1.3.6.1.4.1.14179.2.1.8.1.1
+
+CPU usage								1.3.6.1.4.1.14179.1.1.5.1.0
+Mem free								1.3.6.1.4.1.14179.1.1.5.2.0
+Mem total								1.3.6.1.4.1.14179.1.1.5.3.0
+temp									1.3.6.1.4.1.14179.2.3.1.13.0
+Number Of MobileStations  currently associated with WLAN		1.3.6.1.4.1.14179.2.1.1.1.38
+Number of WLANs currently active on this AP interface			1.3.6.1.4.1.14179.2.2.2.1.11
+No of Users associated with this radio					1.3.6.1.4.1.14179.2.2.2.1.15
+
+
+
+1.3.6.1.4.1.14179.2.1.1.1.38	#stations per ssid  3=help, 4=eduroam, 5=guest, 1=khleuven
+
+http://tools.cisco.com/Support/SNMP/do/BrowseOID.do?local=en&translate=Translate&objectInput=bsnMobileStationProtocol
+
+cacti_graph_template_cisco_wlc_station_status - bsnMobileStationStatus, 1.3.6.1.4.1.14179.2.1.4.1.9 
+0 : idle
+1 : aaaPending
+2 : authenticated
+3 : associated
+4 : powersave
+5 : disassociated
+6 : tobedeleted
+7 : probing
+8 : blacklisted
+
+cacti_graph_template_cisco_wlc_station_authentication_algorithm - bsnMobileStationAuthenticationAlgorithm, 1.3.6.1.4.1.14179.2.1.4.1.19 
+0 : openSystem, 1 : sharedKey, 2 : unknown, 128 : openAndEap 
+
+cacti_graph_template_cisco_wlc_station_protocol - bsnMobileStationProtocol, 1.3.6.1.4.1.14179.2.1.4.1.25 
+1 : dot11a
+2 : dot11b
+3 : dot11g
+4 : unknown
+5 : mobile
+6 : dot11n24
+7 : dot11n5
+
+cacti_graph_template_cisco_wlc_station_policy - bsnMobileStationPolicyType, 1.3.6.1.4.1.14179.2.1.4.1.30 
+0 : dot1x
+1 : wpa1
+2 : wpa2
+3 : wpa2vff
+4 : notavailable
+5 : unknown
+
+cacti_graph_template_cisco_wlc_station_cipher - bsnMobileStationEncryptionCypher, 1.3.6.1.4.1.14179.2.1.4.1.31 
+0 : ccmpAes
+1 : tkipMic
+2 : wep40
+3 : wep104
+4 : wep128
+5 : none
+6 : notavailable
+7 : unknown
+
+cacti_graph_template_cisco_wlc_station_eap_type - bsnMobileStationEapType, 1.3.6.1.4.1.14179.2.1.4.1.32 
+0 : eapTls
+1 : ttls
+2 : peap
+3 : leap
+4 : speke
+5 : eapFast
+6 : notavailable
+7 : unknown
+
+cacti_graph_template_cisco_wlc_station_ccx - bsnMobileStationCcxVersion, 1.3.6.1.4.1.14179.2.1.4.1.33 
+0 : notSupported
+1 : ccxv1
+2 : ccxv2
+3 : ccxv3
+4 : ccxv4
+5 : ccxv5

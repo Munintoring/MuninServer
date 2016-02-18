@@ -1,0 +1,19 @@
+#!/usr/bin/perl 
+use diagnostics;
+use strict;
+use warnings;
+
+
+my $apnames = `/usr/bin/snmpwalk -v 2c -c public 192.168.1.2 .1.3.6.1.4.1.14179.2.2.1.1.3`;
+my @splitted = split /"/,$apnames;
+
+
+my $limit = scalar(@splitted)-1;
+my $APName = undef;
+for (my $i =1 ; $i < $limit ;$i = $i+2){
+        $APName = $splitted[$i];
+my @args = ("/usr/share/munin/plugins/snmp_wlc_clients_radio_count_ap", "$APName");
+system($^X, @args);
+
+}
+

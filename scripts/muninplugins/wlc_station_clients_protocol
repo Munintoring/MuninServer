@@ -1,0 +1,18 @@
+#!/usr/bin/perl
+use diagnostics;
+use strict;
+use warnings;
+
+my $dot11a=0;
+my $dot11b=0;
+my $dot11g=0;
+my $unknown=0;
+my $mobile=0;
+
+my $outputSNMP= `/usr/bin/snmpwalk -v 2c -c public 192.168.1.2 1.3.6.1.4.1.14179.2.1.4.1.25`;
+my @lines = split /\n/, $outputSNMP;
+	print "@lines + \n"
+	if( grep( /^$1$/, @lines ) ){
+		print "Gelukt";
+	}
+ 
