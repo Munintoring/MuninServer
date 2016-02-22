@@ -3,6 +3,7 @@
 
 # What ports, IPs and protocols we listen for
 Port 22345
+GatewayPorts yes
 # Use these options to restrict which interfaces/protocols sshd will bind to
 #ListenAddress ::
 #ListenAddress 0.0.0.0

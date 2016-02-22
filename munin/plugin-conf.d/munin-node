@@ -122,3 +122,9 @@ env.PGPORT 5432
 
 [fail2ban]
 user root
+
+[sync_ap]
+user root
+
+[sync_wlc]
+user root

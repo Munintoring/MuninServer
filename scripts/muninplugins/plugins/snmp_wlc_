@@ -3,7 +3,7 @@ use diagnostics;
 use strict;
 use warnings;
 
-my $nas	= "193.191.187.33";
+my $nas	= "192.168.1.2";
 my $SNMPCommunity = "public";
 my $SNMPPort = "161";
 
@@ -21,7 +21,7 @@ my $bsnMobileStationCcxVersion	= ".1.3.6.1.4.1.14179.2.1.4.1.33";
 
 if ($graph =~ 'bsnMobileStationStatus') {
 	my ($idle, $aaaPending, $authenticated, $associated, $powersave, $disassociated, $tobedeleted, $probing, $blacklisted) = (0,0,0,0,0,0,0,0,0);
-	$snmpgetinfo = `/usr/bin/snmpwalk -v 2c -c public 10.25.0.5 $bsnMobileStationStatus`;
+	$snmpgetinfo = `/usr/bin/snmpwalk -v 2c -c public 192.168.1.2 $bsnMobileStationStatus`;
 	
 	my @lines = split /\n/, $snmpgetinfo;
 	  foreach my $line (@lines) {
@@ -39,7 +39,7 @@ if ($graph =~ 'bsnMobileStationStatus') {
 	if ($ARGV[0] && $ARGV[0] eq "config") {
 	  print "graph_args --base 1000 -l 0\n";
 	  print "graph_title Station status\n";
-	  print "graph_category WLC\n";
+	  print "graph_category WLC_TEST\n";
 	  print "graph_info INFO\n";
 	  print "graph_vlabel Clients\n";
 	  print "idle.label Total clients idle\n";
@@ -66,7 +66,7 @@ if ($graph =~ 'bsnMobileStationStatus') {
 }
 if ($graph =~ 'bsnMobileStationProtocol') {
 	my ($dot11a, $dot11b, $dot11g, $unknown, $mobile, $dot11n24, $dot11n5) = (0,0,0,0,0,0,0);
-	$snmpgetinfo = `/usr/bin/snmpwalk -v 2c -c public 10.25.0.5 $bsnMobileStationProtocol`;
+	$snmpgetinfo = `/usr/bin/snmpwalk -v 2c -c public 192.168.1.2 $bsnMobileStationProtocol`;
 	
 	my @lines = split /\n/, $snmpgetinfo;
 	  foreach my $line (@lines) {
@@ -82,7 +82,7 @@ if ($graph =~ 'bsnMobileStationProtocol') {
 	if ($ARGV[0] && $ARGV[0] eq "config") {
 	  print "graph_args --base 1000 -l 0\n";
 	  print "graph_title Station radio type\n";
-	  print "graph_category WLC\n";
+	  print "graph_category WLC_TEST\n";
 	  print "graph_info INFO\n";
 	  print "graph_vlabel Clients\n";
 	  print "dot11a.label Total clients on 5 GHz 802.11a\n";
@@ -104,7 +104,7 @@ if ($graph =~ 'bsnMobileStationProtocol') {
 }
 if ($graph =~ 'bsnMobileStationEapType') {
 	my ($eapTls, $ttls, $peap, $leap, $speke, $eapFast, $notavailable, $unknown) = (0,0,0,0,0,0,0,0);
-	$snmpgetinfo = `/usr/bin/snmpwalk -v 2c -c public 10.25.0.5 $bsnMobileStationEapType`;
+	$snmpgetinfo = `/usr/bin/snmpwalk -v 2c -c public 192.168.1.2 $bsnMobileStationEapType`;
 	
 	my @lines = split /\n/, $snmpgetinfo;
 	  foreach my $line (@lines) {
@@ -121,7 +121,7 @@ if ($graph =~ 'bsnMobileStationEapType') {
 	if ($ARGV[0] && $ARGV[0] eq "config") {
 	  print "graph_args --base 1000 -l 0\n";
 	  print "graph_title Station EAP type\n";
-	  print "graph_category WLC\n";
+	  print "graph_category WLC_TEST\n";
 	  print "graph_info INFO\n";
 	  print "graph_vlabel Clients\n";
 	  print "eapTls.label Total clients using eapType: eap-TLS\n";
@@ -146,7 +146,7 @@ if ($graph =~ 'bsnMobileStationEapType') {
 }
 if ($graph =~ 'bsnMobileStationCcxVersion') {
 	my ($notSupported, $ccxv1, $ccxv2, $ccxv3, $ccxv4, $ccxv5) = (0,0,0,0,0,0);
-	$snmpgetinfo = `/usr/bin/snmpwalk -v 2c -c public 10.25.0.5 $bsnMobileStationCcxVersion`;
+	$snmpgetinfo = `/usr/bin/snmpwalk -v 2c -c public 192.168.1.2 $bsnMobileStationCcxVersion`;
 	
 	my @lines = split /\n/, $snmpgetinfo;
 	  foreach my $line (@lines) {
@@ -161,7 +161,7 @@ if ($graph =~ 'bsnMobileStationCcxVersion') {
 	if ($ARGV[0] && $ARGV[0] eq "config") {
 	  print "graph_args --base 1000 -l 0\n";
 	  print "graph_title Station CCX version\n";
-	  print "graph_category WLC\n";
+	  print "graph_category WLC_TEST\n";
 	  print "graph_info INFO\n";
 	  print "graph_vlabel Clients\n";
 	  print "graph_info Cisco Compatible Extensions\n";

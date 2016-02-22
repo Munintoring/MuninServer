@@ -1,0 +1,26 @@
+#!/usr/bin/perl
+use diagnostics;
+use strict;
+use warnings;
+
+print "<!DOCTYPE html>\n";
+print "<html>\n";
+print "<body>\n";
+print "<table border='1' style='width:100%'>\n";
+print "<tr>\n";
+print "<td>IP-address</td>\n";
+print "<td>MAC-address </td>\n";
+print "<td>SSID</td>\n";
+print "<td>MAC-AP (Base Radio MAC)</td>\n";
+print "<td>APName</td>\n";
+print "</tr>\n";
+
+my $lines = `/etc/scripts/ToonAlgemeenOverzicht | grep $ARGV[0]`;
+
+
+print $lines;
+print "\n</table>\n";
+print "</body>\n";
+print "</html>\n";
+
+

@@ -1,0 +1,15 @@
+#!/bin/bash
+
+
+ls /etc/munin/plugins | grep -P "snmp_wlc_(bsnMobileStationStatus|bsnMobileStationProtocol|bsnMobileStationEapType|bsnMobileStationCcxVersion)" | xargs -i rm /etc/munin/plugins/{}
+xargs -i ln -s /usr/share/munin/plugins/snmp_wlc_ /etc/munin/plugins/snmp_wlc_bsnMobileStationStatus
+xargs -i ln -s /usr/share/munin/plugins/snmp_wlc_ /etc/munin/plugins/snmp_wlc_bsnMobileStationProtocol
+xargs -i ln -s /usr/share/munin/plugins/snmp_wlc_ /etc/munin/plugins/snmp_wlc_bsnMobileStationEapType
+xargs -i ln -s /usr/share/munin/plugins/snmp_wlc_ /etc/munin/plugins/snmp_wlc_bsnMobileStationCcxVersion
+
+#/usr/bin/snmpwalk -v 2c -c public 192.168.1.2 1.3.6.1.4.1.14179.2.1.4 | cut -d '"' -f2 | xargs -i ln -s /usr/share/munin/plugins/snmp_wlc_ /etc/munin/plugins/snmp_wlc_bsnMobileStationStatus
+#/usr/bin/snmpwalk -v 2c -c public 192.168.1.2 1.3.6.1.4.1.14179.2.1.4 | cut -d '"' -f2 | xargs -i ln -s /usr/share/munin/plugins/snmp_wlc_ /etc/munin/plugins/snmp_wlc_bsnMobileStationProtocol
+#/usr/bin/snmpwalk -v 2c -c public 192.168.1.2 1.3.6.1.4.1.14179.2.1.4 | cut -d '"' -f2 | xargs -i ln -s /usr/share/munin/plugins/snmp_wlc_ /etc/munin/plugins/snmp_wlc_bsnMobileStationEapType
+#/usr/bin/snmpwalk -v 2c -c public 192.168.1.2 1.3.6.1.4.1.14179.2.1.4 | cut -d '"' -f2 | xargs -i ln -s /usr/share/munin/plugins/snmp_wlc_ /etc/munin/plugins/snmp_wlc_bsnMobileStationCcxVersion
+/etc/init.d/munin-node restart
+

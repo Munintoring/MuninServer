@@ -1,0 +1,86 @@
+#!/usr/bin/perl 
+
+# Dit script genereert per AP hoeveel clients er op 2.4 gh en 5 gh zitten 
+# Momenteel is de AP hardcoded
+# gebaseerd op snmp_wlc_ap__
+# Jannick
+
+
+#   !!! bugs !!! 
+
+my $apnames = `/usr/bin/snmpwalk -v 2c -c public 192.168.1.2 .1.3.6.1.4.1.14179.2.2.1.1.3`;
+my @splitted = split /"/,$apnames;
+
+
+my $limit = scalar(@splitted)-1;
+
+for (my $i  ; $i < $limit ;$i = $i+2){
+        print $splitted[$i];
+        print "\n";
+
+}
+use diagnostics;
+use strict;
+use warnings;
+
+my $APName="Merry"; #Merry als testAP  
+my $APMacDec = `/usr/bin/snmpwalk -v 2c -c public 192.168.1.2 .1.3.6.1.4.1.14179.2.2.1.1.3 | perl -ne 'print\$1 if /.+14179.2.2.1.1.3.(.+) =.+$APName\"/'`;
+
+#print "Decimaal MAC-adres van AP : $APMacDec\n"; 
+
+# uitbreiding: zie script Mr. Geens voor Vlan (niet in dit script) 
+
+my $bsnAPName			= ".1.3.6.1.4.1.14179.2.2.1.1.3.$APMacDec";
+my $bsnApIpAddress              = ".1.3.6.1.4.1.14179.2.2.1.1.19.$APMacDec";
+my $bsnAPLocation               = ".1.3.6.1.4.1.14179.2.2.1.1.4.$APMacDec";
+my $bsnAPModel                  = ".1.3.6.1.4.1.14179.2.2.1.1.16.$APMacDec";
+my $bsnAPSerialNumber           = ".1.3.6.1.4.1.14179.2.2.1.1.17.$APMacDec";
+#my $clcCdpApCacheNeighName      = ".1.3.6.1.4.1.9.9.623.1.3.1.1.6.$APMacDec"; # bestaat niet op onze AP's
+#my $clcCdpApCacheNeighAddress   = ".1.3.6.1.4.1.9.9.623.1.3.1.1.8.$APMacDec";
+#my $clcCdpApCacheNeighInterface = ".1.3.6.1.4.1.9.9.623.1.3.1.1.9.$APMacDec";
+my $bsnApIfNoOfUsers            = ".1.3.6.1.4.1.14179.2.2.2.1.15.$APMacDec";
+
+my $snmpgetinfo = `/usr/bin/snmpget -v 2c -c public 192.168.1.2 $bsnApIpAddress $bsnAPLocation $bsnAPModel $bsnAPSerialNumber`;
+#print $snmpgetinfo;
+
+my @lines = split /\n/, $snmpgetinfo; #splitten van info
+
+$bsnApIpAddress = $lines[0] =~ s/.+: (.*)/$1/r;  # IP-adres AP
+$bsnAPLocation = $lines[1] =~ s/.+: "(.*)"/$1/r; # Locatie AP 
+$bsnAPModel = $lines[2] =~ s/.+: "?(.*)\s*"/$1/r; # model AP
+$bsnAPSerialNumber = $lines[3] =~ s/.+: "(.*)"/$1/r; # serial# AP
+# uitbreiding: zie script Mr. Geens ( snmp_wlc_ap__) 
+
+$bsnApIfNoOfUsers = `/usr/bin/snmpwalk -v 2c -c public 192.168.1.2 $bsnApIfNoOfUsers`;
+#print $bsnApIfNoOfUsers;
+
+@lines = split /\n/, $bsnApIfNoOfUsers;
+
+my $clients24 = $lines[0] =~ s/.+: (.*)/$1/r; #aantal clients op 2.4GHz
+my $clients5  = $lines[1] =~ s/.+: (.*)/$1/r; #aantal clients op 5GHz
+
+
+
+#print "clients24.value " . "$clients24" . "\n";
+#print "clients5.value " . "$clients5" . "\n";
+
+
+print "graph_args --upper-limit 10 -l 0\n";
+print "graph_scale no\n";
+print "graph_title $APName\n";
+print "graph_category APs\n";
+print "graph_info AP name/ip: $APName/$bsnApIpAddress<br>AP Location: $bsnAPLocation<br>AP Model/Serial:$bsnAPModel/$bsnAPSerialNumber<br>\n";
+print "graph_order Total blah\n";
+print "graph_vlabel Clients\n";
+print "clients24.value " . "$clients24" . "\n";
+print "clients5.value " . "$clients5" . "\n";
+print "clients24.label Total clients on 2.4 GHz\n";
+print "clients5.label Total clients on 5 GHz\n";
+print "update_rate 60";
+exit;
+
+
+
+
+
+
