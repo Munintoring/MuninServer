@@ -3,24 +3,22 @@ use diagnostics;
 use strict;
 use warnings;
 
-print "<!DOCTYPE html>\n";
-print "<html>\n";
-print "<body>\n";
-print "<table border='1' style='width:100%'>\n";
+print "<div class='row'>";
+print "<div class='col-md-12'>";
+print  "<table class='table table-striped'>";
 print "<tr>\n";
-print "<td>IP-address</td>\n";
-print "<td>MAC-address </td>\n";
-print "<td>SSID</td>\n";
-print "<td>MAC-AP (Base Radio MAC)</td>\n";
-print "<td>APName</td>\n";
+print "<th>IP-address</th>\n";
+print "<th>MAC-address </th>\n";
+print "<th>SSID</th>\n";
+print "<th>MAC-AP (Base Radio MAC)</th>\n";
+print "<th>APName</th>\n";
+
 print "</tr>\n";
 
 my $lines = `/etc/scripts/ToonAlgemeenOverzicht | grep $ARGV[0]`;
 
 
 print $lines;
-print "\n</table>\n";
-print "</body>\n";
-print "</html>\n";
+print "\n</table></div></div>\n";
 
 

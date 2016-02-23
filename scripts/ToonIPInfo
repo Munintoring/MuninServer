@@ -1,0 +1,11 @@
+#!/usr/bin/perl
+use diagnostics;
+use strict;
+use warnings;
+
+my $lines = `/etc/scripts/ToonOverzichtIP | grep $ARGV[0]`;
+
+
+print $lines;
+
+

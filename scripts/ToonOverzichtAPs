@@ -3,37 +3,69 @@ use diagnostics;
 use strict;
 use warnings;
 
-
-
+my $nas=`/etc/scripts/inputIP`;
+chomp($nas);
 my $APName = ".1.3.6.1.4.1.14179.2.2.1.1.3"; 	#bsnAPName
-my @snmpgetinfoAPName = `/usr/bin/snmpwalk -v 2c -c public 192.168.1.2 $APName | cut -d '"' -f2`;
+my @snmpgetinfoAPName = `/usr/bin/snmpwalk -v 2c -c public $nas $APName | cut -d '"' -f2`;
 
 my $MACAP = ".1.3.6.1.4.1.14179.2.2.1.1.1"; #bsnAPDot3MacAddress
-my @snmpgetinfoMACAP = `/usr/bin/snmpwalk -v 2c -c public 192.168.1.2 $MACAP | cut -d '"' -f2`;
+my @snmpgetinfoMACAP = `/usr/bin/snmpwalk -v 2c -c public $nas $MACAP | cut -d '"' -f2`;
+
+my $NuOfClientsAP = ".1.3.6.1.4.1.14179.2.2.13.1.24"; #bsnAPIfLoadNumOfClients
+
+my @usersperap = `/usr/bin/snmpwalk -v 2c -c public $nas $NuOfClientsAP | cut -d " " -f4 `;
+
+my $location= ".1.3.6.1.4.1.14179.2.2.1.1.4"; # bsnAPLocation
+my @snmplocationsAP = `/usr/bin/snmpwalk -v 2c -c public $nas $location | cut -d '"' -f2`;
+
+my $ip= "1.3.6.1.4.1.14179.2.2.1.1.28";
+my @ipforAP = `/usr/bin/snmpwalk -v 2c -c public $nas $ip | cut -d ':' -f2`;
+
+my $APDot3MacAddress = ".1.3.6.1.4.1.14179.2.2.1.1.1"; # bsnAPDot3MacAddress;
+my @snmpDot3MacAddress = `/usr/bin/snmpwalk -v 2c -c public $nas $APDot3MacAddress |cut -d ':' -f2`;
 
 
-print "<!DOCTYPE html>\n";
-print "<html>\n";
-print "<body>\n";
-print "<table border='1' style='width:100%'>\n";
+
+
+print "<div class='row'>";
+print "<div class='col-md-12'>";
+print  "<table class='table table-striped'>";
 print "<tr>\n";
-print "<td>APName</td>\n";
+print "<th>APNaam</th>\n";
+print "<th>Grafiek</th>\n";
+print "<th>Grafiek gedetailleerd</th>\n";
+print "<th>2.4 GHz</th>\n";
+print "<th>5 GHz</th>\n";
+print "<th>Total</th>\n";
+print "<th>Locatie</th>\n";
+print "<th>Ip Address AP</th>";
+print "<th>MAC Address AP</th>";
 print "</tr>\n";
 
 my $limit = scalar(@snmpgetinfoAPName);
 
-
+my $j=0;
+my $temp = 0;
 for(my $i=0 ; $i < $limit ; $i++) {
-	
+	$j = ($i*2);
 	chomp($snmpgetinfoAPName[$i]);
-	
+	chomp($usersperap[$i]);
 	print "\n";
 	print "<tr>";
-	print "<td> <a href='/toonclientsperap.php?AP=$snmpgetinfoAPName[$i]'>$snmpgetinfoAPName[$i]</td>";
+	print "<td> <a href='/monitoring/toonclientsperap.php?AP=$snmpgetinfoAPName[$i]'>$snmpgetinfoAPName[$i]</td>";
+	print "<td> <a href='/munin/WLC/WLC/snmp_wlc_ap_$snmpgetinfoAPName[$i]_bsnApIfNoOfUsers.html'> Grafiek $snmpgetinfoAPName[$i] No Of Users</td>";
+	print "<td> <a href='/munin/WLC/WLC/snmp_wlc_ap_$snmpgetinfoAPName[$i]_bsnAPIfLoad.html'> Grafiek $snmpgetinfoAPName[$i] Detailed</td>";
+	print "<td>$usersperap[$j-1]</td>";
+	print "<td>$usersperap[$j]</td>";
+	$temp = $usersperap[$j+1] + $usersperap[$j];
+	print "<td>$temp</td>";
+	print "<td>@snmplocationsAP[$i]</td>";
+	print "<td>@ipforAP[$i]</td>";
+	print "<td>@snmpDot3MacAddress[$i]</td>";
 	print "</tr>";
 }
 
-print "\n</table>\n";
+print "\n</table></div></div>\n";
 print "</body>\n";
 print "</html>\n";
 

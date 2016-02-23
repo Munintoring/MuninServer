@@ -3,32 +3,38 @@ use diagnostics;
 use strict;
 use warnings;
 
-print "<!DOCTYPE html>\n";
-print "<html>\n";
-print "<body>\n";
-print "<table border='1' style='width:100%'>\n";
+my $nas=`/etc/scripts/inputIP`;
+chomp($nas);
+print "<div class='row'>";
+print "<div class='col-md-12'>";
+print  "<table class='table table-striped'>";
 print "<tr>\n";
-print "<td>SSID-Name</td>\n";
+print "<th>SSID-Naam</th>\n";
+print "<th>Aantal clients</th>\n";
 print "</tr>\n";
 
-my $Ssid = ".1.3.6.1.4.1.14179.2.1.4.1.7"; 
-my @snmpgetinfoSsid = uniq(`/usr/bin/snmpwalk -v 2c -c public 192.168.1.2 $Ssid |cut -d '"' -f2 `);
+my $ssids = ".1.3.6.1.4.1.14179.2.1.1.1.2"; 
+my @snmpgetinfoSsid = uniq(`/usr/bin/snmpwalk -v 2c -c public $nas $ssids |cut -d '"' -f2 `);
 my $limit = scalar(@snmpgetinfoSsid);
+
+my $mobileStations = '.1.3.6.1.4.1.14179.2.1.1.1.38';
+
+my @ssidlist = `/usr/bin/snmpwalk -v 2c -c public $nas $ssids | cut -d '"' -f2`;
+my @usersperssid = `/usr/bin/snmpwalk -v 2c -c public $nas $mobileStations | cut -d " " -f4 `;
 
 
 for(my $i=0 ; $i < $limit ; $i++) {
 
 
  	print "<tr>";
-	print "<td><a href='/toonclientsperssid.php?SSID=$snmpgetinfoSsid[$i]'>$snmpgetinfoSsid[$i]</a></td>";
+	print "<td><a href='/monitoring/toonclientsperssid.php?SSID=$snmpgetinfoSsid[$i]'>$snmpgetinfoSsid[$i]</a></td>";
+	print "<td>$usersperssid[$i]</td>";
+
 	print "</tr>";
 
 }
 
-print "\n</table>\n";
-print "</body>\n";
-print "</html>\n";
-
+print "\n</table></div></div>\n";
 
 sub uniq {
     my %seen;

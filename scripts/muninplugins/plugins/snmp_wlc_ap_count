@@ -1,5 +1,5 @@
 #!/bin/bash
-
+nas="192.168.1.2"
 if [ "$1" = "autoconf" ]; then
     echo yes
     exit 0
@@ -20,4 +20,4 @@ if [ "$1" = "config" ]; then
     exit 0
 fi
 
-/usr/bin/snmpwalk -v 2c -c public 192.168.1.2 $bsnAPName 2>/dev/null | wc -l | awk '{print "ap_count.value " $1}'
+/usr/bin/snmpwalk -v 2c -c public $nas $bsnAPName 2>/dev/null | wc -l | awk '{print "ap_count.value " $1}'

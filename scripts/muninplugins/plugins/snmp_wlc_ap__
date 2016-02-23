@@ -14,9 +14,9 @@ unless (($APName = $1) && ($action = $2)) {
   exit 2;
 }
 
-my $ApMacDec = `/usr/bin/snmpwalk -v 2c -c public 192.168.1.2 .1.3.6.1.4.1.14179.2.2.1.1.3 | perl -ne 'print \$1 if /.+14179.2.2.1.1.3.(.+) =.+$APName\"/'`;
+my $ApMacDec = `/usr/bin/snmpwalk -v 2c -c public $nas .1.3.6.1.4.1.14179.2.2.1.1.3 | perl -ne 'print \$1 if /.+14179.2.2.1.1.3.(.+) =.+$APName\"/'`;
 my $bsnAPGroupVlanName	= ".1.3.6.1.4.1.14179.2.2.1.1.30.$ApMacDec";
-my $snmpgetinfo = `/usr/bin/snmpget -v 2c -c public 192.168.1.2 $bsnAPGroupVlanName`;
+my $snmpgetinfo = `/usr/bin/snmpget -v 2c -c public $nas $bsnAPGroupVlanName`;
 $bsnAPGroupVlanName = $snmpgetinfo =~ s/.+: "(.*)"\n/$1/r; 
 
 if ($action =~ 'bsnApIfNoOfUsers') {
@@ -30,8 +30,8 @@ if ($action =~ 'bsnApIfNoOfUsers') {
 #	my $clcCdpApCacheNeighAddress	= ".1.3.6.1.4.1.9.9.623.1.3.1.1.8.$ApMacDec.1";
 #	my $clcCdpApCacheNeighInterface	= ".1.3.6.1.4.1.9.9.623.1.3.1.1.9.$ApMacDec.1";
 	my $bsnApIfNoOfUsers		= ".1.3.6.1.4.1.14179.2.2.2.1.15.$ApMacDec";
-	#my $snmpgetinfo = `/usr/bin/snmpget -v 2c -c public 192.168.1.2 $bsnApIpAddress $bsnAPLocation $bsnAPModel $bsnAPSerialNumber $bsnAPGroupVlanName $clcCdpApCacheNeighName $clcCdpApCacheNeighAddress $clcCdpApCacheNeighInterface`;
-	my $snmpgetinfo = `/usr/bin/snmpget -v 2c -c public 192.168.1.2 $bsnApIpAddress $bsnAPLocation $bsnAPModel $bsnAPSerialNumber`;
+	#my $snmpgetinfo = `/usr/bin/snmpget -v 2c -c public $nas $bsnApIpAddress $bsnAPLocation $bsnAPModel $bsnAPSerialNumber $bsnAPGroupVlanName $clcCdpApCacheNeighName $clcCdpApCacheNeighAddress $clcCdpApCacheNeighInterface`;
+	my $snmpgetinfo = `/usr/bin/snmpget -v 2c -c public $nas $bsnApIpAddress $bsnAPLocation $bsnAPModel $bsnAPSerialNumber`;
 	
 	my @lines = split /\n/, $snmpgetinfo;
 	$bsnApIpAddress = $lines[0] =~ s/.+: (.*)/$1/r; 
@@ -46,7 +46,7 @@ if ($action =~ 'bsnApIfNoOfUsers') {
 #	$clcCdpApCacheNeighAddress = join(".",unpack("C*",pack("H*",$clcCdpApCacheNeighAddress)));
 #	$clcCdpApCacheNeighInterface = $lines[6] =~ s/.+: "(.*?)"/$1/r; 
 
-	$bsnApIfNoOfUsers = `/usr/bin/snmpwalk -v 2c -c public 192.168.1.2 $bsnApIfNoOfUsers`;
+	$bsnApIfNoOfUsers = `/usr/bin/snmpwalk -v 2c -c public $nas $bsnApIfNoOfUsers`;
 	@lines = split /\n/, $bsnApIfNoOfUsers;
 	my $clients24 = $lines[0] =~ s/.+: (.*)/$1/r;
 	my $clients5  = $lines[1] =~ s/.+: (.*)/$1/r;
@@ -75,27 +75,27 @@ if ($action =~ 'bsnAPIfLoad') {
 	my $bsnAPIfLoadNumOfClients	= ".1.3.6.1.4.1.14179.2.2.13.1.4.$ApMacDec";
 	my $bsnAPIfPoorSNRClients	= ".1.3.6.1.4.1.14179.2.2.13.1.24.$ApMacDec";
 
-	my $snmpgetinfo= `/usr/bin/snmpwalk -v 2c -c public 192.168.1.2 $bsnAPIfLoadRxUtilization`;
+	my $snmpgetinfo= `/usr/bin/snmpwalk -v 2c -c public $nas $bsnAPIfLoadRxUtilization`;
 	my @lines = split /\n/, $snmpgetinfo;
 	my $loadRx24 = $lines[0] =~ s/.+: (.*)/$1/r;
 	my $loadRx5  = $lines[1] =~ s/.+: (.*)/$1/r;
 	
-	$snmpgetinfo= `/usr/bin/snmpwalk -v 2c -c public 192.168.1.2 $bsnAPIfLoadTxUtilization`;
+	$snmpgetinfo= `/usr/bin/snmpwalk -v 2c -c public $nas $bsnAPIfLoadTxUtilization`;
 	@lines = split /\n/, $snmpgetinfo;
 	my $loadTx24 = $lines[0] =~ s/.+: (.*)/$1/r;
 	my $loadTx5  = $lines[1] =~ s/.+: (.*)/$1/r;
 	
-	$snmpgetinfo= `/usr/bin/snmpwalk -v 2c -c public 192.168.1.2 $bsnAPIfLoadChannelUtilization`;
+	$snmpgetinfo= `/usr/bin/snmpwalk -v 2c -c public $nas $bsnAPIfLoadChannelUtilization`;
 	@lines = split /\n/, $snmpgetinfo;
 	my $loadChan24 = $lines[0] =~ s/.+: (.*)/$1/r;
 	my $loadChan5  = $lines[1] =~ s/.+: (.*)/$1/r;
 	
-	$snmpgetinfo= `/usr/bin/snmpwalk -v 2c -c public 192.168.1.2 $bsnAPIfLoadNumOfClients`;
+	$snmpgetinfo= `/usr/bin/snmpwalk -v 2c -c public $nas $bsnAPIfLoadNumOfClients`;
 	@lines = split /\n/, $snmpgetinfo;
 	my $clients24 = $lines[0] =~ s/.+: (.*)/$1/r;
 	my $clients5  = $lines[1] =~ s/.+: (.*)/$1/r;
 	
-	$snmpgetinfo= `/usr/bin/snmpwalk -v 2c -c public 192.168.1.2 $bsnAPIfPoorSNRClients`;
+	$snmpgetinfo= `/usr/bin/snmpwalk -v 2c -c public $nas $bsnAPIfPoorSNRClients`;
 	@lines = split /\n/, $snmpgetinfo;
 	my $poor_clients24 = $lines[0] =~ s/.+: (.*)/$1/r;
 	my $poor_clients5  = $lines[1] =~ s/.+: (.*)/$1/r;

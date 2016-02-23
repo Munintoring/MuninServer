@@ -36,4 +36,4 @@ zwijn:x:1000:1000:Zwijn,,,:/home/zwijn:/bin/bash
 munin:x:116:125::/var/lib/munin:/bin/false
 sshd:x:117:65534::/var/run/sshd:/usr/sbin/nologin
 guest-w72JpK:x:118:126:Guest,,,:/tmp/guest-w72JpK:/bin/bash
-ring:x:1001:1001::/home/ring:/bin/bash
+ring:x:1001:1001:,,,:/home/ring:/bin/bash

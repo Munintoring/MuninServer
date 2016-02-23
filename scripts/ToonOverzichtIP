@@ -1,0 +1,128 @@
+#!/usr/bin/perl
+use diagnostics;
+use strict;
+use warnings;
+use Switch;
+
+my $nas=`/etc/scripts/inputIP`;
+chomp($nas);
+#ophalen ip-adressen clients
+my $IP	 =".1.3.6.1.4.1.14179.2.1.4.1.2"; #$bsnMobileStationIpAddress 
+my @snmpgetinfoIP = `/usr/bin/snmpwalk -v 2c -c public $nas $IP | cut -d ' ' -f4`;
+
+#ophalen mac-adressen clients
+my $MAC =  ".1.3.6.1.4.1.14179.2.1.4.1.1"; #bsnMobileStationMacAddress
+my @snmpgetinfoMAC = `/usr/bin/snmpwalk -v 2c -c public $nas $MAC | cut -d ':' -f2`;
+
+#ophalen ssid waarop client geconnecteerd is
+my $Ssid = ".1.3.6.1.4.1.14179.2.1.4.1.7"; #bsnMobileStationSsid
+my @snmpgetinfoSsid = `/usr/bin/snmpwalk -v 2c -c public $nas $Ssid |cut -d '"' -f2 `;
+
+#ophalen van het APMacAdress (Base Radio) 
+my $APMacAddress= ".1.3.6.1.4.1.14179.2.1.4.1.4"; #bsnMobileStationAPMacAddr
+my @snmpgetinfoAPMacAddress = `/usr/bin/snmpwalk -v 2c -c public $nas $APMacAddress | cut -d ':' -f2`;
+
+#ophalen van Mac-adressen clients om om te zetten naar MACDec
+my @MAClist = `/usr/bin/snmpwalk -v 2c -c public $nas .1.3.6.1.4.1.14179.2.1.4.1.1 | cut -d ' ' -f1`;
+my @MACDeclist; 
+
+my $plimit = scalar(@MAClist);
+for (my $p =0 ; $p < $plimit ; $p++)
+{
+
+	$MACDeclist[$p] = substr("$MAClist[$p]",30);
+
+}
+
+
+#ophalen APName
+my $APName = ".1.3.6.1.4.1.14179.2.2.1.1.3"; #bsnAPName
+my @snmpAPName = `/usr/bin/snmpwalk -v 2c -c public $nas $APName |cut -d '"' -f2 `;
+
+#ophalen equivalent Base Radio Address
+my $APDot3MacAddress = ".1.3.6.1.4.1.14179.2.2.1.1.1"; # bsnAPDot3MacAddress
+my @snmpDot3MacAddress = `/usr/bin/snmpwalk -v 2c -c public $nas $APDot3MacAddress |cut -d ':' -f2 `;
+
+my $end = scalar(@snmpAPName);
+
+#hashmap : key = Base Radio Mac, value = APName
+my %hashAP;
+for(my $j=0;$j< $end; $j++){
+	chomp($snmpDot3MacAddress[$j]);
+	chomp($snmpAPName[$j]);
+	$hashAP{$snmpDot3MacAddress[$j]} = "$snmpAPName[$j]";
+}
+
+#ophalen welk protocol de clients gebruiken
+my $protocol= ".1.3.6.1.4.1.14179.2.1.4.1.25" ; #bsnMobileStationProtocol 
+my @snmpgetinfoProtocol = `/usr/bin/snmpwalk -v 2c -c public $nas $protocol | cut -d ' ' -f4`;
+
+#ophalen bytes received / sent 
+my $bytesreceived = ".1.3.6.1.4.1.14179.2.1.6.1.2";
+my @snmpgetinfoBytesReceived = `/usr/bin/snmpwalk -v 2c -c public $nas $bytesreceived | cut -d ':' -f2`;
+
+my $bytessent = ".1.3.6.1.4.1.14179.2.1.6.1.3";
+my @snmpgetinfoBytesSent = `/usr/bin/snmpwalk -v 2c -c public $nas $bytessent | cut -d ':' -f2`;
+
+
+my $limit = scalar(@snmpgetinfoIP);
+
+
+for(my $i=0 ; $i < $limit ; $i++) {
+	
+	chomp($snmpgetinfoIP[$i]);
+	chomp($snmpgetinfoMAC[$i]);
+	chomp($snmpgetinfoSsid[$i]);
+	chomp($snmpgetinfoAPMacAddress[$i]);
+	chomp($snmpgetinfoProtocol[$i]);
+	chomp($snmpgetinfoBytesReceived[$i]);
+	chomp($snmpgetinfoBytesSent[$i]);
+	if(!$snmpgetinfoIP[$i]){
+}
+	print "\n";
+
+	print " <div class='row'>";
+        print "<div class='col-md-8'>";
+	print  "<table class='table table-striped'>";
+        print "<tbody>";
+	
+	print "<th> IP Address </th>";
+	print "<td> $snmpgetinfoIP[$i]</td></tr>";
+
+
+	print "<tr> <th> MAC Address </th>";
+	print "<td> $snmpgetinfoMAC[$i] </td> </tr>";
+
+	print "<tr><th> SSID </th>";
+	print "<td><a href='/monitoring/toonclientsperssid.php?SSID=$snmpgetinfoSsid[$i]'>$snmpgetinfoSsid[$i]</a></td></tr>";
+
+	print "<tr><th> AP MAC (Base Radio) </th>";
+	print "<td>$snmpgetinfoAPMacAddress[$i]</td></tr>";
+
+	print "<tr><th> AP Name </th>";
+	print "<td> <a href='/monitoring/toonclientsperap.php?AP=$hashAP{$snmpgetinfoAPMacAddress[$i]}'>$hashAP{$snmpgetinfoAPMacAddress[$i]}</td></tr>";
+
+	print "<tr><th> Protocol  </th>";
+	print "<td>";
+
+#dot11a(1), dot11b(2), dot11g(3), unknown(4), mobile(5)
+
+	switch($snmpgetinfoProtocol[$i]){
+  		 case 1            { print "dot11a (1)" }
+   		 case 2            { print "dot11b (2)" }
+   		 case 3            { print "dot11g (3)" }
+   		 case 4            { print "unknown(4)" }
+   		 case 5            { print "mobile (5)" }
+
+	}
+
+	print "</td></tr>";
+	print "<tr><th> Bytes Received </th>";
+	print "<td>$snmpgetinfoBytesReceived[$i]</td></tr>";
+
+	print "<tr><th> Bytes Sent </th>";
+	print "<td>$snmpgetinfoBytesSent[$i]</td></tr>";
+
+	print "</tbody></table></div></div>";
+}
+

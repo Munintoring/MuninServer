@@ -128,3 +128,16 @@ user root
 
 [sync_wlc]
 user root
+
+[snmp_wlc_]
+user root
+
+[snmp_wlc_ap__]
+user root
+
+[snmp_wlc_ap_*]
+user root
+
+[snmp_wlc_*]
+user root
+
