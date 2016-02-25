@@ -1,0 +1,48 @@
+#!/usr/bin/perl
+use diagnostics;
+use strict;
+use warnings;
+use Redis::Client;
+my $client = Redis::Client->new( host => 'localhost', port => 6379 );
+
+my $nas=`/etc/scripts/inputIP`;
+chomp($nas);
+
+my $APName = ".1.3.6.1.4.1.14179.2.2.1.1.3"; 	#bsnAPName
+my @APNames = `/usr/bin/snmpwalk -v 2c -c public $nas $APName | cut -d '"' -f2`;
+
+my $MACAP = ".1.3.6.1.4.1.14179.2.2.1.1.1"; #bsnAPDot3MacAddress
+my @MACAPS = `/usr/bin/snmpwalk -v 2c -c public $nas $MACAP | cut -d ':' -f2`;
+
+my $NuOfClientsAP = ".1.3.6.1.4.1.14179.2.2.2.1.15"; #bsnAPIfLoadNumOfClients
+my @usersperap = `/usr/bin/snmpwalk -v 2c -c public $nas $NuOfClientsAP | cut -d " " -f4 `;
+
+my $location= ".1.3.6.1.4.1.14179.2.2.1.1.4"; # bsnAPLocation
+my @locations = `/usr/bin/snmpwalk -v 2c -c public $nas $location | cut -d '"' -f2`;
+
+my $ip= "1.3.6.1.4.1.14179.2.2.1.1.28";
+my @ipforAP = `/usr/bin/snmpwalk -v 2c -c public $nas $ip | cut -d ':' -f2`;
+
+my $bsnAPName = ".1.3.6.1.4.1.14179.2.2.1.1.3";
+my $apcount = `/usr/bin/snmpwalk -v 2c -c public $nas $bsnAPName 2>/dev/null | wc -l`;
+
+my $limit = scalar(@APNames);
+my $j=0;
+my $values;
+
+for(my $i=0 ; $i < $limit ; $i++) {
+	$j = ($i*2);
+	
+	chomp($APNames[$i]);
+	chomp($usersperap[$j]);
+	chomp($usersperap[$j+1]);
+	chomp($MACAPS[$i]);
+	chomp($locations[$i]);
+	chomp($ipforAP[$i]);
+
+	$values= "$APNames[$i],$MACAPS[$i],$usersperap[$j],$usersperap[$j+1],$locations[$i],$ipforAP[$i]";
+	
+	$client->hset('aphashes', $APNames[$i] => $values);
+
+}
+

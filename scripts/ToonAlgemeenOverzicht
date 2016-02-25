@@ -2,6 +2,8 @@
 use diagnostics;
 use strict;
 use warnings;
+
+#my $nas ="192.168.1.2";
 my $nas=`/etc/scripts/inputIP`;
 chomp($nas);
 
@@ -9,6 +11,9 @@ my $IP	 =".1.3.6.1.4.1.14179.2.1.4.1.2"; #$bsnMobileStationIpAddress
 my @snmpgetinfoIP = `/usr/bin/snmpwalk -v 2c -c public $nas $IP | cut -d ' ' -f4`;
 
 #print @snmpgetinfoIP;
+
+my $username = ".1.3.6.1.4.1.14179.2.1.4.1.3";
+my @snmpgetinfoUsername = `/usr/bin/snmpwalk -v 2c -c public $nas $username | cut -d '"' -f2`;
 
 my $MAC =  ".1.3.6.1.4.1.14179.2.1.4.1.1"; #bsnMobileStationMacAddress
 my @snmpgetinfoMAC = `/usr/bin/snmpwalk -v 2c -c public $nas $MAC | cut -d ':' -f2`;
@@ -41,52 +46,43 @@ for(my $j=0;$j< $end; $j++){
 	$hashAP{$snmpDot3MacAddress[$j]} = "$snmpAPName[$j]";
 }
 
-my $protocol= ".1.3.6.1.4.1.14179.2.1.4.1.25" ; #bsnMobileStationProtocol 
-my @snmpgetinfoProtocol = `/usr/bin/snmpwalk -v 2c -c public $nas $protocol | cut -d ' ' -f4`;
-
-
-my $bytesreceived = ".1.3.6.1.4.1.14179.2.1.6.1.2";
-my @snmpgetinfoBytesReceived = `/usr/bin/snmpwalk -v 2c -c public $nas $bytesreceived | cut -d ':' -f2`;
-#print "@snmpgetinfoBytesReceived";
-
-my $bytessent = ".1.3.6.1.4.1.14179.2.1.6.1.2";
-my @snmpgetinfoBytesSent = `/usr/bin/snmpwalk -v 2c -c public $nas $bytessent | cut -d ':' -f2`;
-#print "@snmpgetinfoBytesSent";
-
-
-# om een overzicht te maken
-# -> $snmpgetinfoIP $snmpgetinfoAPSsid $snmpgetinfoAPMacAddress omzetten in array 
-# for loop 
-
-#HTML probeersel
-
-#print "<!DOCTYPE html>\n";
-#print "<html>\n";
-#print "<body>\n";
+print "<script src='sorttable.js'></script>";
 print "<div class='row'>";
 print "<div class='col-md-12'>";
-print  "<table class='table table-striped'>";
+print "<table class='sortable table table-striped'>";
 print "<tr>\n";
-print "<th>IP-address</th>\n";
-print "<th>MAC-address </th>\n";
-print "<th>SSID</th>\n";		
-print "<th>MAC-AP (Base Radio MAC)</th>\n";
-print "<th>APName</th>\n";		
-print "</tr>\n";
+print "<th>test</th>\n";
+print "<th class='sorttable_nosort'>IP-address</th>\n";
+print "<th>Name</th>\n";
+print "<th>MAC-address </th>";
+print "<th>SSID</th>";		
+print "<th>MAC-AP (Base Radio MAC)</th>";
+print "<th>APName</th>";		
+print "</tr>";
 
 my $limit = scalar(@snmpgetinfoIP);
+#my $limit1 = scalar(@snmpgetinfoUsername);
+#my $limit2 = scalar(@snmpgetinfoUsername)
+#my $limit3 = scalar(@snmpgetinfoMAC);
+#my $limit4 = scalar(@snmpgetinfoSsid);
+#my $limit5 = scalar(@snmpgetinfoAPMacAddress);
+#my $limit6 = scalar(@hashAP);
 
+#print "echo $limit $limit1 $limit2 $limit3 $limit4 $limit5 $limit6";
 
 for(my $i=0 ; $i < $limit ; $i++) {
 	
 	chomp($snmpgetinfoIP[$i]);
+	chomp($snmpgetinfoUsername[$i]);
 	chomp($snmpgetinfoMAC[$i]);
 	chomp($snmpgetinfoSsid[$i]);
 	chomp($snmpgetinfoAPMacAddress[$i]);
-	
+		
 	print "\n";
 	print "<tr>";
+	print "<td>$i</td>";
 	print "<td><a href='/monitoring/toonipinfo.php?IP=$snmpgetinfoIP[$i]'>$snmpgetinfoIP[$i]</a></td>";
+	print "<td> $snmpgetinfoUsername[$i] </td>";
 	print "<td> $snmpgetinfoMAC[$i] </td>";
 	print "<td><a href='/monitoring/toonclientsperssid.php?SSID=$snmpgetinfoSsid[$i]'>$snmpgetinfoSsid[$i]</a></td>";
 	print "<td>$snmpgetinfoAPMacAddress[$i]</td>";

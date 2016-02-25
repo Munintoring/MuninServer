@@ -1,5 +1,6 @@
 #!/bin/bash
-nas="192.168.1.2"
+nas=`/etc/scripts/inputIP`
+
 if [ "$1" = "autoconf" ]; then
     echo yes
     exit 0
@@ -16,7 +17,7 @@ if [ "$1" = "config" ]; then
     echo 'ap_count.label AP count'
     echo 'ap_count.info Total connected access points'
     echo 'ap_count.min 0'
-
+    echo 'ap_count.draw AREA'
     exit 0
 fi
 

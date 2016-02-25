@@ -5,13 +5,7 @@ use warnings;
 
 my $nas=`/etc/scripts/inputIP`;
 chomp($nas);
-print "<div class='row'>";
-print "<div class='col-md-12'>";
-print  "<table class='table table-striped'>";
-print "<tr>\n";
-print "<th>SSID-Naam</th>\n";
-print "<th>Aantal clients</th>\n";
-print "</tr>\n";
+
 
 my $ssids = ".1.3.6.1.4.1.14179.2.1.1.1.2"; 
 my @snmpgetinfoSsid = uniq(`/usr/bin/snmpwalk -v 2c -c public $nas $ssids |cut -d '"' -f2 `);
@@ -22,6 +16,15 @@ my $mobileStations = '.1.3.6.1.4.1.14179.2.1.1.1.38';
 my @ssidlist = `/usr/bin/snmpwalk -v 2c -c public $nas $ssids | cut -d '"' -f2`;
 my @usersperssid = `/usr/bin/snmpwalk -v 2c -c public $nas $mobileStations | cut -d " " -f4 `;
 
+my $total = 0;
+print "<script src='sorttable.js'></script>";
+print "<div class='row'>";
+print "<div class='col-md-12'>";
+print  "<table class='sortable table table-striped'>";
+print "<tr>\n";
+print "<th>SSID-Naam</th>\n";
+print "<th>Aantal clients</th>\n";
+print "</tr>\n";
 
 for(my $i=0 ; $i < $limit ; $i++) {
 
@@ -29,11 +32,11 @@ for(my $i=0 ; $i < $limit ; $i++) {
  	print "<tr>";
 	print "<td><a href='/monitoring/toonclientsperssid.php?SSID=$snmpgetinfoSsid[$i]'>$snmpgetinfoSsid[$i]</a></td>";
 	print "<td>$usersperssid[$i]</td>";
-
+	$total = $total + $usersperssid[$i];
 	print "</tr>";
 
 }
-
+print "<tfoot><tr><td><h3>Totaal</h3></td><td><h3>$total</h3></td><tr></tfoot>";
 print "\n</table></div></div>\n";
 
 sub uniq {

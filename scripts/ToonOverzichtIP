@@ -10,6 +10,10 @@ chomp($nas);
 my $IP	 =".1.3.6.1.4.1.14179.2.1.4.1.2"; #$bsnMobileStationIpAddress 
 my @snmpgetinfoIP = `/usr/bin/snmpwalk -v 2c -c public $nas $IP | cut -d ' ' -f4`;
 
+my $username = ".1.3.6.1.4.1.14179.2.1.4.1.3";
+my @snmpgetinfoUsername = `/usr/bin/snmpwalk -v 2c -c public $nas $username | cut -d '"' -f2`;
+
+
 #ophalen mac-adressen clients
 my $MAC =  ".1.3.6.1.4.1.14179.2.1.4.1.1"; #bsnMobileStationMacAddress
 my @snmpgetinfoMAC = `/usr/bin/snmpwalk -v 2c -c public $nas $MAC | cut -d ':' -f2`;
@@ -72,15 +76,15 @@ for(my $i=0 ; $i < $limit ; $i++) {
 	
 	chomp($snmpgetinfoIP[$i]);
 	chomp($snmpgetinfoMAC[$i]);
+	chomp($snmpgetinfoUsername[$i]);
 	chomp($snmpgetinfoSsid[$i]);
 	chomp($snmpgetinfoAPMacAddress[$i]);
 	chomp($snmpgetinfoProtocol[$i]);
 	chomp($snmpgetinfoBytesReceived[$i]);
 	chomp($snmpgetinfoBytesSent[$i]);
 	if(!$snmpgetinfoIP[$i]){
-}
+}else{
 	print "\n";
-
 	print " <div class='row'>";
         print "<div class='col-md-8'>";
 	print  "<table class='table table-striped'>";
@@ -88,6 +92,9 @@ for(my $i=0 ; $i < $limit ; $i++) {
 	
 	print "<th> IP Address </th>";
 	print "<td> $snmpgetinfoIP[$i]</td></tr>";
+
+	print "<th> Username </th>";
+	print "<td> $snmpgetinfoUsername[$i]</td></tr>";
 
 
 	print "<tr> <th> MAC Address </th>";
@@ -123,6 +130,7 @@ for(my $i=0 ; $i < $limit ; $i++) {
 	print "<tr><th> Bytes Sent </th>";
 	print "<td>$snmpgetinfoBytesSent[$i]</td></tr>";
 
+
 	print "</tbody></table></div></div>";
 }
-
+}

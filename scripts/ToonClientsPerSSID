@@ -8,6 +8,7 @@ print "<div class='col-md-12'>";
 print  "<table class='table table-striped'>";
 print "<tr>\n";
 print "<th>IP-address</th>\n";
+print "<th>Usernaam </th>\n";
 print "<th>MAC-address </th>\n";
 print "<th>SSID</th>\n";
 print "<th>MAC-AP (Base Radio MAC)</th>\n";

@@ -3,7 +3,8 @@ use diagnostics;
 use strict;
 use warnings;
 
-my $nas	= "192.168.1.2";
+my $nas=`/etc/scripts/inputIP`;
+chomp($nas);
 my $SNMPCommunity = "public";
 my $SNMPPort = "161";
 
@@ -50,6 +51,15 @@ if ($graph =~ 'bsnMobileStationStatus') {
 	  print "tobedeleted.label Total clients tobedeleted\n";
 	  print "probing.label Total clients probing\n";
 	  print "blacklisted.label Total clients blacklisted\n";
+	  print "idle.draw AREA\n";
+          print "aaaPending.draw AREA\n";
+          print "authenticated.draw AREA\n";
+          print "associated.draw AREA\n";
+          print "powersave.draw AREA\n";
+          print "disassociated.draw AREA\n";
+          print "tobedeleted.draw AREA\n";
+          print "probing.draw AREA\n";
+          print "blacklisted.draw AREA\n";
 	  exit;
 	}
 
@@ -87,9 +97,18 @@ if ($graph =~ 'bsnMobileStationProtocol') {
 	  print "dot11a.label Total clients on 5 GHz 802.11a\n";
 	  print "dot11b.label Total clients on 2.4 GHz 802.11b\n";
 	  print "dot11g.label Total clients on 2.4 GHz 802.11g\n";
-	  print "unknown.label Total unknown clients\n";
+	  print "mobile.label Total clients on mobile\n";	 
+ 	  print "unknown.label Total unknown clients\n";
 	  print "dot11n24.label Total clients on 2.4 GHz 802.11n\n";
 	  print "dot11n5.label Total clients on 5 GHz 802.11n\n";
+          print "dot11a.draw AREA\n";
+          print "dot11b.draw AREA\n";
+          print "dot11g.draw AREA\n";
+          print "unknown.draw AREA\n";
+          print "mobile.draw AREA\n";
+          print "dot11n24.draw AREA\n";
+          print "dot11n5.draw AREA\n";
+
 	  exit;
 	}
 
@@ -131,6 +150,14 @@ if ($graph =~ 'bsnMobileStationEapType') {
 	  print "eapFast.label Total clients using eapType: eap-Fast\n";
 	  print "notavailable.label Total clients using eapType: notavailable\n";
 	  print "unknown.label Total clients using eapType: unknown\n";
+	  print "eapTls.draw AREA\n";
+          print "ttls.draw AREA\n";
+          print "peap.draw AREA\n";
+          print "leap.draw AREA\n";
+          print "speke.draw AREA\n";
+          print "eapFast.draw AREA\n";
+          print "notavailable.draw AREA\n";
+          print "unknown.draw AREA\n";
 	  exit;
 	}
 
@@ -170,7 +197,13 @@ if ($graph =~ 'bsnMobileStationCcxVersion') {
 	  print "ccxv3.label Total clients with ccxv3 support \n";
 	  print "ccxv4.label Total clients with ccxv4 support \n";
 	  print "ccxv5.label Total clients with ccxv5 support \n";
-	  exit;
+	  print "notSupported.draw AREA\n";
+          print "ccxv1.draw AREA\n";
+          print "ccxv2.draw AREA\n";
+          print "ccxv3.draw AREA\n";
+          print "ccxv4.draw AREA\n";
+          print "ccxv5.draw AREA\n";
+          exit;
 	}
 
 	print "notSupported.value " . "$notSupported" . "\n";

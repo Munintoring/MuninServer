@@ -1,0 +1,49 @@
+#!/usr/bin/perl
+use diagnostics;
+use strict;
+use warnings;
+use Redis::Client;
+my $client = Redis::Client->new( host => 'localhost', port => 6379 );
+
+
+my @keys = $client->hkeys( 'iphashes' );
+
+
+print "<script src='sorttable.js'></script>";
+print "<div class='row'>";
+print "<div class='col-md-12'>";
+print "<table class='sortable table table-striped'>";
+print "<tr>\n";
+print "<th class='sorttable_nosort'>IP-address</th>\n";
+print "<th>Name</th>\n";
+print "<th>MAC-address </th>";
+print "<th>SSID</th>";		
+print "<th>MAC-AP (Base Radio MAC)</th>";
+print "<th>APName</th>";		
+print "</tr>";
+
+
+
+my $key;	
+foreach $key (@keys){  # key = APname
+		
+	my $values = $client->hget( 'iphashes', $key );
+	my @value=  split /,/, $values;
+
+#$values ="$IPs[$i],$usernames[$i],$MACs[$i],$ssids[$i],$APMacs[$i],$nameAP";
+
+	print "\n";
+	print "<tr>";
+	print "<td><a href='/monitoring/toonipinfo.php?IP=$value[0]'>$value[0]</a></td>";
+	print "<td> $value[1] </td>";
+	print "<td> $value[2] </td>";
+	print "<td><a href='/monitoring/toonclientsperssid.php?SSID=$value[3]'>$value[3]</a></td>";
+	print "<td>$value[4]</td>";
+	print "<td> <a href='/monitoring/toonclientsperap.php?AP=$value[5]}'>$value[5]</a></td>";
+	print "</tr>";
+}
+
+print "\n</table></div></div>\n";
+#print "</body>\n";
+#print "</html>\n";
+

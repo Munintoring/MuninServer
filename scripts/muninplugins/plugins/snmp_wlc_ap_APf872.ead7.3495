@@ -1,0 +1,57 @@
+#!/usr/bin/perl
+use diagnostics;
+use strict;
+use warnings;
+
+my $nas = "10.25.0.5";
+my $SNMPCommunity = "public";
+my $SNMPPort = "161";
+my $APName=undef;
+
+my $ApMacDec = `/usr/bin/snmpwalk -v 2c -c public 10.25.0.5 .1.3.6.1.4.1.14179.2.2.1.1.3 | grep -P APf872.ead7.3495 |  perl -ne 'print \$1 if /.+14179.2.2.1.1.3.(.+) =.+$APName\"/'`;
+my $bsnAPGroupVlanName  = ".1.3.6.1.4.1.14179.2.2.1.1.30.$ApMacDec";
+my $snmpgetinfo = `/usr/bin/snmpget -v 2c -c public 10.25.0.5 $bsnAPGroupVlanName`;
+$bsnAPGroupVlanName = $snmpgetinfo =~ s/.+: "(.*)"\n/$1/r;
+ 	my $bsnAPName                   = ".1.3.6.1.4.1.14179.2.2.1.1.3.$ApMacDec";
+        my $bsnApIpAddress              = ".1.3.6.1.4.1.14179.2.2.1.1.19.$ApMacDec";
+        my $bsnAPLocation               = ".1.3.6.1.4.1.14179.2.2.1.1.4.$ApMacDec";
+        my $bsnAPModel                  = ".1.3.6.1.4.1.14179.2.2.1.1.16.$ApMacDec";
+        my $bsnAPSerialNumber           = ".1.3.6.1.4.1.14179.2.2.1.1.17.$ApMacDec";
+        my $bsnAPGroupVlanName          = ".1.3.6.1.4.1.14179.2.2.1.1.30.$ApMacDec";
+        my $clcCdpApCacheNeighName      = ".1.3.6.1.4.1.9.9.623.1.3.1.1.6.$ApMacDec.1";
+        my $clcCdpApCacheNeighAddress   = ".1.3.6.1.4.1.9.9.623.1.3.1.1.8.$ApMacDec.1";
+        my $clcCdpApCacheNeighInterface = ".1.3.6.1.4.1.9.9.623.1.3.1.1.9.$ApMacDec.1";
+        my $bsnApIfNoOfUsers            = ".1.3.6.1.4.1.14179.2.2.2.1.15.$ApMacDec";
+	my $snmpgetinfo = `/usr/bin/snmpget -v 2c -c public 10.25.0.5 $bsnApIpAddress $bsnAPLocation $bsnAPModel $bsnAPSerialNumber $bsnAPGroupVlanName $clcCdpApCacheNeighName $clcCdpApCacheNeighAddress $clcCdpApCacheNeighInterface`;
+	
+	my @lines = split /\n/, $snmpgetinfo;
+        $bsnApIpAddress = $lines[0] =~ s/.+: (.*)/$1/r;
+        $bsnAPLocation = $lines[1] =~ s/.+: "(.*)"/$1/r;
+        $bsnAPModel = $lines[2] =~ s/.+: "?(.*)\s*"/$1/r;
+        $bsnAPSerialNumber = $lines[3] =~ s/.+: "(.*)"/$1/r;
+        $bsnAPGroupVlanName = $lines[4] =~ s/.+: "(.*)"/$1/r;
+        $clcCdpApCacheNeighName = $lines[4] =~ s/.+: "(.*)"/$1/r;
+        # convert ip in hex to dec
+        $clcCdpApCacheNeighAddress = $lines[5] =~ s/.+: (.*)/$1/r;
+        $clcCdpApCacheNeighAddress =~ s/ //g;
+        $clcCdpApCacheNeighAddress = join(".",unpack("C*",pack("H*",$clcCdpApCacheNeighAddress)));
+        $clcCdpApCacheNeighInterface = $lines[6] =~ s/.+: "(.*?)"/$1/r;
+
+        $bsnApIfNoOfUsers = `/usr/bin/snmpwalk -v 2c -c public 10.25.0.5 $bsnApIfNoOfUsers`;
+        @lines = split /\n/, $bsnApIfNoOfUsers;
+        my $clients24 = $lines[0] =~ s/.+: (.*)/$1/r;
+	my $clients5  = $lines[1] =~ s/.+: (.*)/$1/r;
+	 if ($ARGV[0] && $ARGV[0] eq "config") {
+          print "graph_args --base 1000 -l 0\n";
+          print "graph_title APf872.ead7.3495\n";
+          print "graph_category $bsnAPGroupVlanName\n";
+          print "graph_info AP name/group/ip: test \n";
+          print "graph_order Total blah\n";
+          print "graph_vlabel Clients\n";
+          print "clients24.label Total clients on 2.4 GHz\n";
+          print "clients5.label Total clients on 5 GHz\n";
+          exit;
+        }
+        print "clients24.value " . "$clients24" . "\n";
+        print "clients5.value " . "$clients5" . "\n";
+

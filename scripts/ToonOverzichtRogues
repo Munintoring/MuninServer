@@ -1,0 +1,51 @@
+#!/usr/bin/perl
+use diagnostics;
+use strict;
+use warnings;
+
+my $nas=`/etc/scripts/inputIP`;
+chomp($nas);
+
+my $APMacRogue = ".1.3.6.1.4.1.14179.2.1.7.1.1"; #bsnRogueAPDot11MacAddress
+my @snmpgetinfoAPMacRogue = `/usr/bin/snmpwalk -v 2c -c public $nas $APMacRogue | cut -d ':' -f2`;
+
+my $APSSID = ".1.3.6.1.4.1.14179.2.1.7.1.11";#bsnRogueAPSSID
+my @snmpgetinfoAPSSID = `/usr/bin/snmpwalk -v 2c -c public $nas $APSSID | cut -d '"' -f2`;
+
+my $starttime = ".1.3.6.1.4.1.14179.2.1.7.1.3";#bsnRogueAPSSID
+my @snmpgetinfoStartTime = `/usr/bin/snmpwalk -v 2c -c public $nas $starttime | cut -d '"' -f2`;
+my $lasttime = ".1.3.6.1.4.1.14179.2.1.7.1.4";#bsnRogueAPSSID
+my @snmpgetinfoLastTime = `/usr/bin/snmpwalk -v 2c -c public $nas $lasttime | cut -d '"' -f2`;
+
+
+print "<script src='sorttable.js'></script>";
+print "<div class='row'>";
+print "<div class='col-md-12'>";
+print  "<table class='sortable table table-striped'>";
+print "<tr>\n";
+print "<th>AP MAC Address</th>\n";
+print "<th class='sorttable_alpha'>SSID</th>";
+print "<th class='sorttable_nosort'>First Time Reported</th>";
+print "<th class='sorttable_nosort'>Last Time Reported</th>";
+print "</tr>\n";
+
+my $limit = scalar(@snmpgetinfoAPMacRogue);
+
+my $j=0;
+my $temp = 0;
+for(my $i=0 ; $i < $limit ; $i++) {
+	$j = ($i*2);
+	chomp($snmpgetinfoAPSSID[$i]);
+	print "\n";
+	print "<tr>";
+	print "<td>$snmpgetinfoAPMacRogue[$i]</td>";
+	print "<td>$snmpgetinfoAPSSID[$i]</td>";
+	print "<td>$snmpgetinfoStartTime[$i]</td>";
+	print "<td>$snmpgetinfoLastTime[$i]</td>";
+	print "</tr>";
+}
+
+print "\n</table></div></div>\n";
+print "</body>\n";
+print "</html>\n";
+

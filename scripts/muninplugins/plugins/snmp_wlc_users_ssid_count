@@ -2,7 +2,8 @@
 use diagnostics;
 use strict;
 use warnings;
-my $nas = '192.168.1.2';
+my $nas=`/etc/scripts/inputIP`;
+chomp($nas);
 my $ssids = '.1.3.6.1.4.1.14179.2.1.1.1.2';
 my $mobileStations = '.1.3.6.1.4.1.14179.2.1.1.1.38';
 
@@ -29,7 +30,8 @@ print "graph_category WLC\n";
 		my $ssid= lc($ssidlist[$i]);
 		print "$ssid.label $ssidlist[$i]\n";
     		print "$ssid.info users connected to $ssidlist[$i]\n";  
-    		print "$ssid.min 0\n";
+		print "$ssid.draw AREA\n";
+		print "$ssid.min 0\n";
 	}
 exit;
 }

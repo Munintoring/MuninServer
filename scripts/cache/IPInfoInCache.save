@@ -1,0 +1,52 @@
+#!/usr/bin/perl
+use diagnostics;
+use strict;
+use warnings;
+use Redis::Client;
+my $client = Redis::Client->new( host => 'localhost', port => 6379 );
+
+my $nas=`/etc/scripts/inputIP`;
+chomp($nas);
+
+my $IP	 =".1.3.6.1.4.1.14179.2.1.4.1.2"; #$bsnMobileStationIpAddress 
+my @IPs = `/usr/bin/snmpwalk -v 2c -c public $nas $IP | cut -d ' ' -f4`;
+
+my $username = ".1.3.6.1.4.1.14179.2.1.4.1.3";
+my @usernames = `/usr/bin/snmpwalk -v 2c -c public $nas $username | cut -d '"' -f2`;
+
+my $MAC =  ".1.3.6.1.4.1.14179.2.1.4.1.1"; #bsnMobileStationMacAddress
+my @MACs = `/usr/bin/snmpwalk -v 2c -c public $nas $MAC | cut -d ':' -f2`;
+
+my $Ssid = ".1.3.6.1.4.1.14179.2.1.4.1.7"; #bsnMobileStationSsid
+my @ssids=`/usr/bin/snmpwalk -v 2c -c public $nas $Ssid |cut -d '"' -f2 `;
+
+my $APMacAddress= ".1.3.6.1.4.1.14179.2.1.4.1.4"; #bsnMobileStationAPMacAddr
+my @APMacs = `/usr/bin/snmpwalk -v 2c -c public $nas $APMacAddress | cut -d ':' -f2`;
+
+my $APName = ".1.3.6.1.4.1.14179.2.2.1.1.3"; #bsnAPName
+my @APNames = `/usr/bin/snmpwalk -v 2c -c public $nas $APName |cut -d '"' -f2 `;
+
+my $APDot3MacAddress = ".1.3.6.1.4.1.14179.2.2.1.1.1"; # bsnAPDot3MacAddress
+my @APDot3Macs = `/usr/bin/snmpwalk -v 2c -c public $nas $APDot3MacAddress |cut -d ':' -f2 `;
+
+my $end = scalar(@snmpAPName);
+
+# hash voor APname te verkrijgen , aparte hash op cache voor aanmaken ?
+my %hashAP;
+for(my $j=0;$j< $end; $j++){
+	chomp($snmpDot3MacAddress[$j]);
+	chomp($snmpAPName[$j]);
+	$hashAP{$snmpDot3MacAddress[$j]} = "$snmpAPName[$j]";
+}
+
+my $protocol= ".1.3.6.1.4.1.14179.2.1.4.1.25" ; #bsnMobileStationProtocol 
+my @protocols = `/usr/bin/snmpwalk -v 2c -c public $nas $protocol | cut -d ' ' -f4`;
+
+
+my $bytesreceived = ".1.3.6.1.4.1.14179.2.1.6.1.2";
+my @bytesR = `/usr/bin/snmpwalk -v 2c -c public $nas $bytesreceived | cut -d ':' -f2`;
+#print "@snmpgetinfoBytesReceived";
+
+my $bytessent = ".1.3.6.1.4.1.14179.2.1.6.1.2";
+my @bytesS = `/usr/bin/snmpwalk -v 2c -c public $nas $bytessent | cut -d ':' -f2`;
+

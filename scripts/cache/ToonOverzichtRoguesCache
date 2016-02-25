@@ -1,0 +1,44 @@
+#!/usr/bin/perl
+use diagnostics;
+use strict;
+use warnings;
+use Redis::Client;
+
+my $client = Redis::Client->new( host => 'localhost', port => 6379 );
+
+my @keys = $client->hkeys( 'roguehashes' );
+
+
+
+print "<script src='sorttable.js'></script>";
+print "<div class='row'>";
+print "<div class='col-md-12'>";
+print  "<table class='sortable table table-striped'>";
+print "<tr>\n";
+print "<th>AP MAC Address</th>\n";
+print "<th class='sorttable_alpha'>SSID</th>";
+print "<th class='sorttable_nosort'>First Time Reported</th>";
+print "<th class='sorttable_nosort'>Last Time Reported</th>";
+print "</tr>\n";
+
+
+my $key;
+foreach $key (@keys){  # key = APname
+
+
+my $values = $client->hget( 'roguehashes', $key );
+my @value=  split /,/, $values;
+
+	print "\n";
+	print "<tr>";
+	print "<td>$value[0]</td>";
+	print "<td>$value[1]</td>";
+	print "<td>$value[2]</td>";
+	print "<td>$value[3]</td>";
+	print "</tr>";
+}
+
+print "\n</table></div></div>\n";
+print "</body>\n";
+print "</html>\n";
+
