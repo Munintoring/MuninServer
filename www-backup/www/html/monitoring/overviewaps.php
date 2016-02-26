@@ -73,7 +73,7 @@
 $handle = fopen("/etc/scripts/dates/dateaps", "r");
 if ($handle) {
     while (($line = fgets($handle)) !== false) {
-     		echo "<h4>Laatste update was op: $line Om de twee minuten wordt dit gerefreshed!</h4>";
+     		echo "<h4>Laatste update was op: $line Om de minuut wordt dit gerefreshed!</h4>";
     }
 
     fclose($handle);
@@ -82,8 +82,6 @@ if ($handle) {
 } 
 
 
-//$output = shell_exec('/usr/bin/snmpwalk -v 2c -c public 192.168.1.2 1.3.6.1.4.1.14179.2.2.1.1.3| cut -d \'"\' -f2');
-//echo "<pre>$output</pre>";
 
 //exec('/etc/scripts/ToonOverzichtAPs',$output);
 exec('/etc/scripts/cache/ToonOverzichtAPsCache',$output);

@@ -1,0 +1,83 @@
+#!/usr/bin/perl
+use diagnostics;
+use strict;
+use warnings;
+use Redis::Client;
+my $client = Redis::Client->new( host => 'localhost', port => 6379 );
+
+$client->del('iphashes');
+
+#my $nas = '192.168.1.2';
+my $nas=`/etc/scripts/inputIP`;
+chomp($nas);
+
+my $oid         = ".1.3.6.1.4.1.14179.2.1.4.1.1";
+my @snmpIPinfo  = `/usr/bin/snmpwalk -v 2c -c public $nas $oid`;
+
+#print @snmpIPinfo;
+my @MACslist = grep{/(3.6.1.4.1.14179.2.1.4.1.1\.)/} @snmpIPinfo;
+#my @MACs = `echo '@MAC' | cut -d ':' -f2`;
+my @MACDeclist;
+
+my $plimit = scalar(@MACslist);
+my @split;
+my @values;
+
+for (my $p =0 ; $p < $plimit ; $p++)
+{
+        $MACDeclist[$p] = substr("$MACslist[$p]",30);
+	@split = split /=/,$MACDeclist[$p];
+	$values[$p] = $split[0];
+}
+
+
+
+my $bsnIP;
+my $bsnMAC;
+my $bsnuser;
+my $bsnmacap;
+my $bsnssid;
+my $i = 0;
+my @IPlist;
+my @MAClist;
+my @userlist;
+my @macaplist;
+my @ssidlist;
+#print @snmpIPinfo;
+foreach  my $value(@values){
+	$bsnMAC  = ".1.3.6.1.4.1.14179.2.1.4.1.1.$value";
+	$MAClist[$i] = `/usr/bin/snmpget -v 2c -c public $nas $bsnMAC | cut -d ':' -f 2`;
+	
+	$bsnIP  = ".1.3.6.1.4.1.14179.2.1.4.1.2.$value";
+	$IPlist[$i] = `/usr/bin/snmpget -v 2c -c public $nas $bsnIP | cut -d ':' -f 2`;
+
+	$bsnuser  = ".1.3.6.1.4.1.14179.2.1.4.1.3.$value";
+	$userlist[$i] = `/usr/bin/snmpget -v 2c -c public $nas $bsnuser | cut -d '"' -f 2`;
+	
+	$bsnmacap  = ".1.3.6.1.4.1.14179.2.1.4.1.4.$value";
+	$macaplist[$i] = `/usr/bin/snmpget -v 2c -c public $nas $bsnmacap | cut -d ':' -f 2`;
+
+	$bsnssid  = ".1.3.6.1.4.1.14179.2.1.4.1.7.$value";
+	$ssidlist[$i] = `/usr/bin/snmpget -v 2c -c public $nas $bsnssid | cut -d '"' -f 2`;
+	
+	
+
+	$i++;
+}
+
+my $jlimit = scalar(@macaplist);
+my @APMACDeclist;
+my @splitAP;
+my @APvalues;
+for (my $j =0 ; $j < $jlimit ; $j++)
+{
+        $APMACDeclist[$j] = substr("$macaplist[$j]",30);
+        @splitAP = split /=/,$APMACDeclist[$j];
+        $APvalues[$j] = $splitAP[0];
+}
+
+
+
+
+print @APvalues;
+

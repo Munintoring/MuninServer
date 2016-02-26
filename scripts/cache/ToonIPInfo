@@ -1,0 +1,19 @@
+#!/usr/bin/perl
+use diagnostics;
+use strict;
+use warnings;
+#temp = IP of MAC of username
+my $temp="";
+if($ARGV[1] && $ARGV[2] && $ARGV[3] && $ARGV[4] && $ARGV[5]){
+$temp = "$ARGV[0] "."$ARGV[1] "."$ARGV[2] "."$ARGV[3] "."$ARGV[4] "."$ARGV[5]";
+}elsif(!$ARGV[0]){
+
+print "Gelieve een waarde mee te geven";
+}else{
+$temp = "$ARGV[0]";
+chomp($temp);
+
+my $lines = `/etc/scripts/ToonOverzichtIP | grep "$temp"`;
+print $lines;
+}
+

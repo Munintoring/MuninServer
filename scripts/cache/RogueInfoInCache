@@ -4,26 +4,44 @@ use strict;
 use warnings;
 use Redis::Client;
 my $client = Redis::Client->new( host => 'localhost', port => 6379 );
+
+$client->del('roguehashes');
+
+
 my $nas=`/etc/scripts/inputIP`;
 chomp($nas);
 
+my $oid         = ".1.3.6.1.4.1.14179.2.1.7.1";
+my @snmpIPinfo  = `/usr/bin/snmpwalk -v 2c -c public $nas $oid`;
 
-my $APMacRogue = ".1.3.6.1.4.1.14179.2.1.7.1.1"; #bsnRogueAPDot11MacAddress
-my @APMacRogues = `/usr/bin/snmpwalk -v 2c -c public $nas $APMacRogue | cut -d ':' -f2`;
+my @APMacRogues = grep{/(3.6.1.4.1.14179.2.1.7.1.1\.)/} @snmpIPinfo;
+#my @APMacRogues = `echo '@APMacRogue' | cut -d ':' -f2`;
 
-my $APSSID = ".1.3.6.1.4.1.14179.2.1.7.1.11";#bsnRogueAPSSID
-my @APSSIDs = `/usr/bin/snmpwalk -v 2c -c public $nas $APSSID | cut -d '"' -f2`;
+my @APSSID = grep{/(3.6.1.4.1.14179.2.1.7.1.11\.)/} @snmpIPinfo;
+my @APSSIDs = `echo '@APSSID' | cut -d '"' -f2`;
 
-my $starttime = ".1.3.6.1.4.1.14179.2.1.7.1.3";#bsnRogueAPSSID
-my @StartTimes = `/usr/bin/snmpwalk -v 2c -c public $nas $starttime | cut -d '"' -f2`;
-my $lasttime = ".1.3.6.1.4.1.14179.2.1.7.1.4";#bsnRogueAPSSID
-my @LastTimes = `/usr/bin/snmpwalk -v 2c -c public $nas $lasttime | cut -d '"' -f2`;
+my @StartTime = grep{/(3.6.1.4.1.14179.2.1.7.1.3\.)/} @snmpIPinfo;
+my @StartTimes = `echo '@StartTime' | cut -d '"' -f2`;
+
+my @LastTime = grep{/(3.6.1.4.1.14179.2.1.7.1.4\.)/} @snmpIPinfo;
+my @LastTimes = `echo '@LastTime' | cut -d '"' -f2`;
+
+#my $APMacRogue = ".1.3.6.1.4.1.14179.2.1.7.1.1"; #bsnRogueAPDot11MacAddress
+#my @APMacRogues = `/usr/bin/snmpwalk -v 2c -c public $nas $APMacRogue | cut -d ':' -f2`;
+
+#my $APSSID = ".1.3.6.1.4.1.14179.2.1.7.1.11";#bsnRogueAPSSID
+#my @APSSIDs = `/usr/bin/snmpwalk -v 2c -c public $nas $APSSID | cut -d '"' -f2`;
+
+#my $starttime = ".1.3.6.1.4.1.14179.2.1.7.1.3";#bsnRogueAPSSID
+#my @StartTimes = `/usr/bin/snmpwalk -v 2c -c public $nas $starttime | cut -d '"' -f2`;
+#my $lasttime = ".1.3.6.1.4.1.14179.2.1.7.1.4";#bsnRogueAPSSID
+#my @LastTimes = `/usr/bin/snmpwalk -v 2c -c public $nas $lasttime | cut -d '"' -f2`;
 
 
 
 my $limit = scalar(@APMacRogues);
 my $values;
-for(my $i=0 ; $i < $limit ; $i++) {
+for(my $i=0 ; $i < $limit -1; $i++) {
         chomp($APMacRogues[$i]);
         chomp($APSSIDs[$i]);
         chomp($StartTimes[$i]);
@@ -35,3 +53,4 @@ for(my $i=0 ; $i < $limit ; $i++) {
 
 
 
+`date > /etc/scripts/dates/daterogues`

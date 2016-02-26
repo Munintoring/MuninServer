@@ -1,0 +1,48 @@
+#!/usr/bin/perl
+use diagnostics;
+use strict;
+use warnings;
+
+
+my $nas=`/etc/scripts/inputIP`;
+chomp($nas);
+
+
+my $oid 	= ".1.3.6.1.4.1.14179.2.1.4.1";
+my @snmpIPinfo	= `/usr/bin/snmpwalk -v 2c -c public $nas $oid`;
+
+my @IPs = grep{/(3.6.1.4.1.14179.2.1.4.1.2\.)/} @snmpIPinfo;
+
+@IPs = `echo "@IPs" | cut -d ':' -f2`;
+
+print @IPs;
+#my @usernames = grep{/(3.6.1.4.1.14179.2.1.4.1.3\.)/} @snmpIPinfo;
+#my @MACs = grep{/(3.6.1.4.1.14179.2.1.4.1.1\.)/} @snmpIPinfo;
+#my @ssids = grep{/(3.6.1.4.1.14179.2.1.4.1.7\.)/} @snmpIPinfo;
+#my @APMacs = grep{/(3.6.1.4.1.14179.2.1.4.1.4\.)/} @snmpIPinfo;
+
+
+
+
+#my $ip		=".1.3.6.1.4.1.14179.2.1.4.1.2"; #$bsnMobileStationIpAddress 
+
+#my $ips =  $snmpIPinfo | grep $ip; 
+
+#print $ips;
+#my @IPs = `/usr/bin/snmpwalk -v 2c -c public $nas $IP | cut -d ' ' -f4`;
+
+#my $username = ".1.3.6.1.4.1.14179.2.1.4.1.3";
+#my @usernames = `/usr/bin/snmpwalk -v 2c -c public $nas $username | cut -d '"' -f2`;
+
+#my $MAC =  ".1.3.6.1.4.1.14179.2.1.4.1.1"; #bsnMobileStationMacAddress
+#my @MACs = `/usr/bin/snmpwalk -v 2c -c public $nas $MAC | cut -d ':' -f2`;
+
+#my $Ssid = ".1.3.6.1.4.1.14179.2.1.4.1.7"; #bsnMobileStationSsid
+my @ssids = `/usr/bin/snmpwalk -v 2c -c public $nas $Ssid |cut -d '"' -f2 `;
+
+#my $APMacAddress= ".1.3.6.1.4.1.14179.2.1.4.1.4"; #bsnMobileStationAPMacAddr
+#my @APMacs = `/usr/bin/snmpwalk -v 2c -c public $nas $APMacAddress | cut -d ':' -f2`;
+
+
+
+

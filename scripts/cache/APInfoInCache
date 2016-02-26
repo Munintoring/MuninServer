@@ -46,3 +46,4 @@ for(my $i=0 ; $i < $limit ; $i++) {
 
 }
 
+`date > /etc/scripts/dates/dateaps`

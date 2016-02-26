@@ -74,7 +74,7 @@
 $handle = fopen("/etc/scripts/dates/daterogues", "r");
 if ($handle) {
     while (($line = fgets($handle)) !== false) {
-                echo "<h4>Laatste update was op: $line Om de twee minuten wordt dit gerefreshed!</h4>";
+            echo "<h4>Laatste update was op: $line Om de minuut wordt dit gerefreshed!</h4>";
     }
 
     fclose($handle);
