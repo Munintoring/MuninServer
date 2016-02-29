@@ -68,7 +68,7 @@
         <p>Hier kan je een overview zien van al de SSIDs.
 			<br/>Je kan op een SSID klikken om een lijst te zien met alle clients die hiermee verbonden zijn.</p>
       </div>
-
+<h4>Deze pagina wordt live gegenereerd.</h4>
     
 <?php                                                                                                           
 

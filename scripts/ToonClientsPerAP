@@ -2,7 +2,58 @@
 use diagnostics;
 use strict;
 use warnings;
+use Redis::Client;
 
+my $client = Redis::Client->new( host => 'localhost', port => 6379 );
+my $AP = $ARGV[0];
+
+my $values = $client->hget( 'aphashes', $AP );
+my @value=  split /,/, $values;
+
+
+my $APClean = $AP;
+$APClean =~ tr/./_/;
+$APClean =~ tr/-/_/;
+#APClean zorgt er voor dat de . en - uit de links worden gehaald want munin zet deze automatisch om in _ Nu werkt elke link naar de grafieken
+my $ApLoad = "/munin/WLC/WLC/snmp_wlc_ap_".$APClean."_bsnAPIfLoad.html";
+my $ApNoOfUsers = "/munin/WLC/WLC/snmp_wlc_ap_".$APClean."_bsnApIfNoOfUsers.html";
+
+     print " <div class='row'>";
+        print "<div class='col-md-8'>";
+        print  "<table class='table table-striped'>";
+        print "<tbody>";
+
+        print "<th> Grafiek number of Users </th>";
+        print "<td> <a href = '$ApNoOfUsers'>Link</a></td></tr>";
+
+        print "<th> Grafiek number of Users Detailled </th>";
+        print "<td> <a href = '$ApLoad'>Link</a></td></tr>";
+
+        print "<tr> <th> Locatie </th>";
+        print "<td> $value[4] </td> </tr>";
+
+        print "<tr><th> Users op 2.4GHz </th>";
+        print "<td>$value[2]</td></tr>";
+
+        print "<tr><th> Users op 2.4GHz </th>";
+        print "<td>$value[3]</td></tr>";
+my $temp = $value[2]+$value[3];
+        print "<tr><th> Totaal Users </th>";
+        print "<td>$temp</td></tr>";
+
+        print "<tr><th> IP AP </th>";
+        print "<td>$value[5]</td></tr>";
+
+
+   print "</tbody></table></div></div>";
+
+#print "<h3><a href = '$ApNoOfUsers'>Grafiek voor $AP number of users</a></h3>";
+#print "<h3><a href = '$ApLoad'>Grafiek voor $AP detailled</a></h3>";
+#print "<h4>Locatie:$value[4]</h4>";
+#print "<h4>Users op 2.4 GHz: $value[2]</h4>";
+#print "<h4>Users op 5 GHz: $value[3]</h4>";
+#print "<h4>Totaal: $temp</h4>";
+print "<h4>Lijst met alle current users - Lege lijst? Geen users op deze AP!</h4>";
 print "<div class='row'>";
 print "<div class='col-md-12'>";
 print  "<table class='table table-striped'>";
@@ -14,9 +65,7 @@ print "<th>SSID</th>\n";
 print "<th>MAC-AP (Base Radio MAC)</th>\n";
 print "<th>APName</th>\n";
 print "</tr>\n";
-
-my $lines = `/etc/scripts/cache/ToonAlgemeenOverzichtCache | grep $ARGV[0]`;
-
+my $lines = `/etc/scripts/cache/ToonAlgemeenOverzichtCache | grep '$AP'`;
 print $lines;
 print "\n</table></div></div>\n";
 

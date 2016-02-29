@@ -1,0 +1,89 @@
+#!/usr/bin/perl
+use diagnostics;
+use strict;
+use warnings;
+use Switch;
+use Redis::Client;
+my $client = Redis::Client->new( host => 'localhost', port => 6379 );
+my $key = $ARGV[0];
+
+
+
+
+#ophalen welk protocol de clients gebruiken
+#my $protocol= ".1.3.6.1.4.1.14179.2.1.4.1.25" ; #bsnMobileStationProtocol 
+#my @snmpgetinfoProtocol = `/usr/bin/snmpwalk -v 2c -c public $nas $protocol | cut -d ' ' -f4`;
+
+#ophalen bytes received / sent 
+#my $bytesreceived = ".1.3.6.1.4.1.14179.2.1.6.1.2";
+#my @snmpgetinfoBytesReceived = `/usr/bin/snmpwalk -v 2c -c public $nas $bytesreceived | cut -d ':' -f2`;
+
+#my $bytessent = ".1.3.6.1.4.1.14179.2.1.6.1.3";
+#my @snmpgetinfoBytesSent = `/usr/bin/snmpwalk -v 2c -c public $nas $bytessent | cut -d ':' -f2`;
+
+my $values;
+my @value;
+if ( $key =~ /(\d{1-3}\.\d{1-3}\.\d{1-3}\.\d{1-3})/ ){
+        $values = $client->hget( 'iphashes', $key );
+        @value=  split /,/, $values;
+}elsif ($key =~ m/@/){
+	$values = $client->hget( 'userhashes', $key );
+	@value=  split /,/, $values;}
+#else{
+#	$values = $client->hget( 'machashes', $key );
+ #       @value=  split /,/, $values;}
+
+
+#            0           1            2          3          4         5         6           7              8
+#$values ="$IPs[$i],$usernames[$i],$MACs[$i],$ssids[$i],$APMacs[$i],$nameAP,$protocol, $bytesreceives, $bytesssent";
+
+	print "\n";
+	print " <div class='row'>";
+        print "<div class='col-md-8'>";
+	print  "<table class='table table-striped'>";
+        print "<tbody>";
+	
+	print "<th> IP Address </th>";
+	print "<td> $value[0]</td></tr>";
+
+	print "<th> Username </th>";
+	print "<td> $value[1]</td></tr>";
+
+
+	print "<tr> <th> MAC Address </th>";
+	print "<td> $value[2] </td> </tr>";
+
+	print "<tr><th> SSID </th>";
+	print "<td><a href='/monitoring/toonclientsperssid.php?SSID=$value[3]'>$value[3]</a></td></tr>";
+
+	print "<tr><th> AP MAC (Base Radio) </th>";
+	print "<td>$value[4]</td></tr>";
+
+	print "<tr><th> AP Name </th>";
+	print "<td> <a href='/monitoring/toonclientsperap.php?AP=value[5]'>$value[5]</td></tr>";
+
+	print "<tr><th> Protocol  </th>";
+	print "<td>";
+
+#dot11a(1), dot11b(2), dot11g(3), unknown(4), mobile(5)
+
+	#switch($value[6]){
+  	#	 case 1            { print "dot11a (1)" }
+   	#	 case 2            { print "dot11b (2)" }
+   	#	 case 3            { print "dot11g (3)" }
+   	#	 case 4            { print "unknown(4)" }
+   	#	 case 5            { print "mobile (5)" }
+
+	#}
+
+	#print "</td></tr>";
+	#print "<tr><th> Bytes Received </th>";
+	#print "<td>$value[7]</td></tr>";
+
+	#print "<tr><th> Bytes Sent </th>";
+	#print "<td>$value[8]</td></tr>";
+
+
+	print "</tbody></table></div></div>";
+
+

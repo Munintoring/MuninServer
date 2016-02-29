@@ -2,18 +2,14 @@
 use diagnostics;
 use strict;
 use warnings;
-#temp = IP of MAC of username
-my $temp="";
-if($ARGV[1] && $ARGV[2] && $ARGV[3] && $ARGV[4] && $ARGV[5]){
-$temp = "$ARGV[0] "."$ARGV[1] "."$ARGV[2] "."$ARGV[3] "."$ARGV[4] "."$ARGV[5]";
-}elsif(!$ARGV[0]){
 
-print "Gelieve een waarde mee te geven";
+
+my $total = `/etc/scripts/cache/ToonOverzichtIP | grep -c $ARGV[0]`;
+if($total == 1){
+print "<h4>Er is in 1 resultaat: </h4>";
 }else{
-$temp = "$ARGV[0]";
-chomp($temp);
 
-my $lines = `/etc/scripts/ToonOverzichtIP | grep "$temp"`;
-print $lines;
+print "<h4>Er zijn in $total resultaten: </h4>";
 }
-
+my $lines = `/etc/scripts/cache/ToonOverzichtIP | grep $ARGV[0]`;
+print $lines;

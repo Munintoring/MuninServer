@@ -17,10 +17,14 @@ my @ssidlist = `/usr/bin/snmpwalk -v 2c -c public $nas $ssids | cut -d '"' -f2`;
 my @usersperssid = `/usr/bin/snmpwalk -v 2c -c public $nas $mobileStations | cut -d " " -f4 `;
 
 my $total = 0;
+print "<div class='form-group'>";
+print "<label>Zoeken in de tabel</label>";
+print "<input type='text' class='form-control' id='search' placeholder='Typ simpele regexen om te zoeken in de tabel. Zoeken op aantal clients is niet mogelijk.'>";
+print "</div>";
 print "<script src='sorttable.js'></script>";
 print "<div class='row'>";
 print "<div class='col-md-12'>";
-print  "<table class='sortable table table-striped'>";
+print  "<table id='table' class='sortable table table-striped'>";
 print "<tr>\n";
 print "<th>SSID-Naam</th>\n";
 print "<th>Aantal clients</th>\n";
@@ -28,7 +32,7 @@ print "</tr>\n";
 
 for(my $i=0 ; $i < $limit ; $i++) {
 
-
+	chomp($usersperssid[$i]);
  	print "<tr>";
 	print "<td><a href='/monitoring/toonclientsperssid.php?SSID=$snmpgetinfoSsid[$i]'>$snmpgetinfoSsid[$i]</a></td>";
 	print "<td>$usersperssid[$i]</td>";
@@ -43,4 +47,6 @@ sub uniq {
     my %seen;
     grep !$seen{$_}++, @_;
 }
+
+print "<script src='search.js'></script>";
 

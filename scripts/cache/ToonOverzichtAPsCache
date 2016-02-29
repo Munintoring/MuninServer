@@ -7,22 +7,35 @@ my $client = Redis::Client->new( host => 'localhost', port => 6379 );
 
 my @keys = $client->hkeys( 'aphashes' );
 
+
+my $hash="aphashes";
+my @keysbackup = $client->hkeys( 'aphashesbackup' );
+
+if(@keysbackup){
+@keys = @keysbackup;
+$hash = "aphashesbackup";
+}
+
+
+
+print "<div class='form-group'>";
+print "<label>Zoeken in de tabel. </label>";
+print "<input type='text' class='form-control' id='search' placeholder='Typ simpele regexen om te zoeken in de tabel. Voor op \"default location\" te zoeken: Typ \"location\" ipv \"default location\".'>";
+print "</div>";
 print "<script src='sorttable.js'></script>";
 print "<div class='row'>";
 print "<div class='col-md-12'>";
-print  "<table class='sortable table table-striped'>";
+print  "<table id='table' class='sortable table table-striped'>";
 print "<tr>\n";
 print "<th>APNaam</th>\n";
-print "<th>Grafiek \#users</th>\n";
-print "<th>Grafiek detailled</th>\n";
 print "<th>2.4GHz</th>\n";
 print "<th>5GHz</th>\n";
 print "<th>Total</th>\n";
 print "<th>Locatie</th>\n";
+print "<th>Vlan-Group</th>\n";
 print "<th class='sorttable_nosort'>IP AP</th>";
 print "<th>MAC AP</th>";
 print "</tr>\n";
-
 my $key;
 my $temp;
 my $total;
@@ -32,7 +45,7 @@ my $total5;
 foreach $key (@keys){  # key = APname
 
 
-my $values = $client->hget( 'aphashes', $key );
+my $values = $client->hget( $hash, $key );
 my @value=  split /,/, $values;
 
 
@@ -40,8 +53,6 @@ my @value=  split /,/, $values;
 	print "\n";
         print "<tr>";
         print "<td> <a href='/monitoring/toonclientsperap.php?AP=$value[0]'>$value[0]</td>";
-        print "<td> <a href='/munin/WLC/WLC/snmp_wlc_ap_$value[0]_bsnApIfNoOfUsers.html'> Grafiek \#Users</td>";
-        print "<td> <a href='/munin/WLC/WLC/snmp_wlc_ap_$value[0]_bsnAPIfLoad.html'> Grafiek Detailed</td>";
         print "<td>$value[2]</td>";
         print "<td>$value[3]</td>";
         $temp = $value[2] + $value[3];
@@ -51,6 +62,7 @@ my @value=  split /,/, $values;
 
         print "<td>$temp</td>";
         print "<td>$value[4]</td>";
+        print "<td>$value[6]</td>";
         print "<td>$value[5]</td>";
         print "<td>$value[1]</td>";
         print "</tr>";
@@ -87,4 +99,6 @@ print "<tfoot><tr><td><h3>Totaal</h3></td><td></td><td></td><td><h3>$total24</h3
 print "\n</table></div></div>\n";
 print "</body>\n";
 print "</html>\n";
+
+print "<script src='search.js'></script>";
 

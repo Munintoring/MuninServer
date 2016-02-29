@@ -1,0 +1,17 @@
+#!/usr/bin/perl
+use diagnostics;
+use strict;
+use warnings;
+use Redis::Client;
+my $client = Redis::Client->new( host => 'localhost', port => 6379 );
+
+#$client->del('iphashes');
+
+my @keysbackup = $client->hkeys( 'iphashes' );
+my $back;
+foreach my $backup(@keysbackup){
+	$back = $client->hget('iphashes', $backup);
+        $client->hset('iphashesbackup', $backup => $back);
+}
+
+

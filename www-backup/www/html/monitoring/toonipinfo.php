@@ -103,8 +103,10 @@ echo "$ip"; ?>. Je kan op een SSID klikken voor alle clients verbonden met deze 
 <?php
 
 
+exec("/etc/scripts/cache/ToonIPInfo $ip", $output);
+//exec("/etc/scripts/cache/ToonOverzichtIP $ip", $output);
 
-exec("/etc/scripts/ToonIPInfo $ip", $output);
+//exec("/etc/scripts/ToonIPInfo $ip", $output);
 
 
 foreach ($output as &$value) {

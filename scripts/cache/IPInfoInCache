@@ -5,6 +5,14 @@ use warnings;
 use Redis::Client;
 my $client = Redis::Client->new( host => 'localhost', port => 6379 );
 
+
+my @keysbackup = $client->hkeys( 'iphashes' );
+my $back;
+foreach my $backup(@keysbackup){
+	$back = $client->hget('iphashes', $backup);
+        $client->hset('iphashesbackup', $backup => $back);
+}
+
 $client->del('iphashes');
 
 #my $nas = '192.168.1.2';
@@ -37,12 +45,18 @@ my $bsnMAC;
 my $bsnuser;
 my $bsnmacap;
 my $bsnssid;
+my $bsnprotocol;
+my $bsnbytesre;
+my $bsnbytesse;
 my $i = 0;
 my @IPlist;
 my @MAClist;
 my @userlist;
 my @macaplist;
 my @ssidlist;
+my @protocollist;
+my @bytesrelist;
+my @bytesselist;
 #print @snmpIPinfo;
 foreach  my $value(@values){
 	$bsnMAC  = ".1.3.6.1.4.1.14179.2.1.4.1.1.$value";
@@ -60,10 +74,20 @@ foreach  my $value(@values){
 	$bsnssid  = ".1.3.6.1.4.1.14179.2.1.4.1.7.$value";
 	$ssidlist[$i] = `/usr/bin/snmpget -v 2c -c public $nas $bsnssid | cut -d '"' -f 2`;
 	
+        $bsnprotocol  = ".1.3.6.1.4.1.14179.2.1.4.1.25.$value";
+        $protocollist[$i] = `/usr/bin/snmpget -v 2c -c public $nas $bsnprotocol | cut -d ':' -f 2`;
+
+        $bsnbytesre  = ".1.3.6.1.4.1.14179.2.1.6.1.2.$value";
+        $bytesrelist[$i] = `/usr/bin/snmpget -v 2c -c public $nas $bsnbytesre | cut -d ':' -f 2`;
+
+        $bsnbytesse  = ".1.3.6.1.4.1.14179.2.1.6.1.3.$value";
+        $bytesselist[$i] = `/usr/bin/snmpget -v 2c -c public $nas $bsnbytesse | cut -d ':' -f 2`;
 	
 
 	$i++;
 }
+
+
 
 my $APMacAddress = ".1.3.6.1.4.1.14179.2.2.1.1.1"; # bsnAPDot3MacAddress
 my @APMacs = `/usr/bin/snmpwalk -v 2c -c public $nas $APMacAddress`;
@@ -109,6 +133,7 @@ for(my $j=0;$j< $end; $j++){
 my $limit = scalar(@MAClist);
 my $values;
 my $nameap;
+my $macvalues;
 for(my $i=0 ; $i < $limit ; $i++) {
 
 
@@ -131,9 +156,24 @@ for(my $i=0 ; $i < $limit ; $i++) {
         if ($ssidlist[$i] ne ""){
                 chomp($ssidlist[$i]);}
 
+        if ($protocollist[$i] ne ""){
+                chomp($protocollist[$i]);}
 
-        $values ="$IPlist[$i],$userlist[$i],$MAClist[$i],$ssidlist[$i],$macaplist[$i],$nameap";
+        if ($bytesrelist[$i] ne ""){
+                chomp($bytesrelist[$i]);}
+
+        if ($bytesselist[$i] ne ""){
+                chomp($bytesselist[$i]);}
+
+	$IPlist[$i] =~ s/^.//;
+	$protocollist[$i]=~ s/^\s+//;
+	$bytesrelist[$i] =~ s/^\s+//;
+	$bytesselist[$i] =~ s/^\s+//;
+        $values ="$IPlist[$i],$userlist[$i],$MAClist[$i],$ssidlist[$i],$macaplist[$i],$nameap,$protocollist[$i],$bytesrelist[$i],$bytesselist[$i]";
         $client->hset('iphashes', $IPlist[$i] => $values);
+	$client->hset('machashes',$MAClist[$i] => $values);
+	$client->hset('userhashes',$userlist[$i]=> $values);
+	
 }
 
 
@@ -145,5 +185,6 @@ if ($ip =~ m/Such/) {
 }
 
 }
+$client->del('iphashesbackup');
 
 `date > /etc/scripts/dates/dateips`

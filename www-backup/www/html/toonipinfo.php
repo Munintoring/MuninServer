@@ -10,7 +10,7 @@ if ($method == "POST"){
 else{
 	$ip = $_GET["IP"];
 }
-exec("/etc/scripts/ToonIPInfo $ip", $output);
+exec("/etc/scripts/cache/ToonIPInfo $ip", $output);
 
 
 foreach ($output as &$value) {

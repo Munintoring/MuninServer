@@ -10,10 +10,23 @@ my @keys = $client->hkeys( 'roguehashes' );
 
 
 
+my $hash="roguehashes";
+my @keys = $client->hkeys( 'roguehashes' );
+my @keysbackup = $client->hkeys( 'roguehashesbackup' );
+
+if(@keysbackup){
+@keys = @keysbackup;
+$hash = "roguehashesbackup";
+}
+
+print "<div class='form-group'>";
+print "<label>Zoeken in de tabel</label>";
+print "<input type='text' class='form-control' id='search' placeholder='Typ simpele regexen om te zoeken in de tabel'>";
+print "</div>";
 print "<script src='sorttable.js'></script>";
 print "<div class='row'>";
 print "<div class='col-md-12'>";
-print  "<table class='sortable table table-striped'>";
+print  "<table id='table' class='sortable table table-striped'>";
 print "<tr>\n";
 print "<th>AP MAC Address</th>\n";
 print "<th class='sorttable_alpha'>SSID</th>";
@@ -26,7 +39,7 @@ my $key;
 foreach $key (@keys){  # key = APname
 
 
-my $values = $client->hget( 'roguehashes', $key );
+my $values = $client->hget( $hash, $key );
 my @value=  split /,/, $values;
 
 	print "\n";
@@ -41,4 +54,6 @@ my @value=  split /,/, $values;
 print "\n</table></div></div>\n";
 print "</body>\n";
 print "</html>\n";
+
+print "<script src='search.js'></script>";
 

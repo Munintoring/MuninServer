@@ -57,76 +57,65 @@ if ($action =~ 'bsnApIfNoOfUsers') {
 	print "clients24.value " . "$clients24" . "\n";
 	print "clients5.value " . "$clients5" . "\n";
 }
-#if ($action =~ 'bsnAPIfLoad') {
-#	my $bsnAPIfLoadRxUtilization	= ".1.3.6.1.4.1.14179.2.2.13.1.1.$ApMacDec";
-#	my $bsnAPIfLoadTxUtilization	= ".1.3.6.1.4.1.14179.2.2.13.1.2.$ApMacDec";
-#	my $bsnAPIfLoadChannelUtilization = ".1.3.6.1.4.1.14179.2.2.13.1.3.$ApMacDec";
-#	my $bsnAPIfLoadNumOfClients	= ".1.3.6.1.4.1.14179.2.2.13.1.4.$ApMacDec";
-#	my $bsnAPIfPoorSNRClients	= ".1.3.6.1.4.1.14179.2.2.13.1.24.$ApMacDec";
+if ($action =~ 'bsnAPIfLoad') {
+	my $bsnAPIfLoadRxUtilization	= ".1.3.6.1.4.1.14179.2.2.13.1.1.$ApMacDec";
+	my $bsnAPIfLoadTxUtilization	= ".1.3.6.1.4.1.14179.2.2.13.1.2.$ApMacDec";
+	my $bsnAPIfLoadChannelUtilization = ".1.3.6.1.4.1.14179.2.2.13.1.3.$ApMacDec";
+	my $bsnAPIfLoadNumOfClients	= ".1.3.6.1.4.1.14179.2.2.13.1.4.$ApMacDec";
+	my $bsnAPIfPoorSNRClients	= ".1.3.6.1.4.1.14179.2.2.13.1.24.$ApMacDec";
 
-#	my $snmpgetinfo= `/usr/bin/snmpwalk -v 2c -c public $nas $bsnAPIfLoadRxUtilization`;
-#	my @lines = split /\n/, $snmpgetinfo;
-#	my $loadRx24 = $lines[0] =~ s/.+: (.*)/$1/r;
-#	my $loadRx5  = $lines[1] =~ s/.+: (.*)/$1/r;
+	my $snmpgetinfo= `/usr/bin/snmpwalk -v 2c -c public $nas $bsnAPIfLoadRxUtilization`;
+	my @lines = split /\n/, $snmpgetinfo;
+	my $loadRx24 = $lines[0] =~ s/.+: (.*)/$1/r;
+	my $loadRx5  = $lines[1] =~ s/.+: (.*)/$1/r;
 	
-#	$snmpgetinfo= `/usr/bin/snmpwalk -v 2c -c public $nas $bsnAPIfLoadTxUtilization`;
-#	@lines = split /\n/, $snmpgetinfo;
-#	my $loadTx24 = $lines[0] =~ s/.+: (.*)/$1/r;
-#	my $loadTx5  = $lines[1] =~ s/.+: (.*)/$1/r;
+	$snmpgetinfo= `/usr/bin/snmpwalk -v 2c -c public $nas $bsnAPIfLoadTxUtilization`;
+	@lines = split /\n/, $snmpgetinfo;
+	my $loadTx24 = $lines[0] =~ s/.+: (.*)/$1/r;
+	my $loadTx5  = $lines[1] =~ s/.+: (.*)/$1/r;
 	
-#	$snmpgetinfo= `/usr/bin/snmpwalk -v 2c -c public $nas $bsnAPIfLoadChannelUtilization`;
-#	@lines = split /\n/, $snmpgetinfo;
-#	my $loadChan24 = $lines[0] =~ s/.+: (.*)/$1/r;
-#	my $loadChan5  = $lines[1] =~ s/.+: (.*)/$1/r;
+	$snmpgetinfo= `/usr/bin/snmpwalk -v 2c -c public $nas $bsnAPIfLoadChannelUtilization`;
+	@lines = split /\n/, $snmpgetinfo;
+	my $loadChan24 = $lines[0] =~ s/.+: (.*)/$1/r;
+	my $loadChan5  = $lines[1] =~ s/.+: (.*)/$1/r;
 	
-#	$snmpgetinfo= `/usr/bin/snmpwalk -v 2c -c public $nas $bsnAPIfLoadNumOfClients`;
-#	@lines = split /\n/, $snmpgetinfo;
-#	my $clients24 = $lines[0] =~ s/.+: (.*)/$1/r;
-#	my $clients5  = $lines[1] =~ s/.+: (.*)/$1/r;
+	$snmpgetinfo= `/usr/bin/snmpwalk -v 2c -c public $nas $bsnAPIfLoadNumOfClients`;
+	@lines = split /\n/, $snmpgetinfo;
+	my $clients24 = $lines[0] =~ s/.+: (.*)/$1/r;
+	my $clients5  = $lines[1] =~ s/.+: (.*)/$1/r;
 	
-#	$snmpgetinfo= `/usr/bin/snmpwalk -v 2c -c public $nas $bsnAPIfPoorSNRClients`;
-#	@lines = split /\n/, $snmpgetinfo;
-#	my $poor_clients24 = $lines[0] =~ s/.+: (.*)/$1/r;
-#	my $poor_clients5  = $lines[1] =~ s/.+: (.*)/$1/r;
+	$snmpgetinfo= `/usr/bin/snmpwalk -v 2c -c public $nas $bsnAPIfPoorSNRClients`;
+	@lines = split /\n/, $snmpgetinfo;
+	my $poor_clients24 = $lines[0] =~ s/.+: (.*)/$1/r;
+	my $poor_clients5  = $lines[1] =~ s/.+: (.*)/$1/r;
 	
-#	if ($ARGV[0] && $ARGV[0] eq "config") {
-#	  print "graph_args --base 1000 -l 0\n";
-#	  print "graph_title $APName detail\n";
-#	  print "graph_category Radios_per_AP\n";
-#	  print "graph_vlabel % + abs\n";
-#	  print "loadRx24.label RX load on 2.4 GHz radio\n";
-#          print "loadRx5.label RX load on 5 GHz radio\n";
-#	  print "loadTx24.label TX load on 2.4 GHz radio\n";
-#          print "loadTx5.label TX load on 5 GHz radio\n";
-#          print "loadChan24.label channel utilization on 2.4 GHz radio\n";
-#          print "loadChan5.label channel utilization on 5 GHz radio\n";
-#          print "clients24.label clients at mi on 2.4 GHz radio\n";
-#          print "clients5.label clients at mi on 5 GHz radio\n";
-#          print "poor_clients24.label clients with poor SNR on 2.4 GHz radio\n";
-#          print "poor_clients5.label clients with poor SNR on 5 GHz radio\n";
-#	  print "loadRx24.draw AREA\n";
-#          print "loadRx5.draw AREA\n";
-#          print "loadTx24.draw AREA\n";
-#          print "loadTx5.draw AREA\n";
-#          print "loadChan24.draw AREA\n";
-#          print "loadChan5.draw AREA\n";
-#          print "clients24.draw AREA\n";
-#          print "clients5.draw AREA\n";
-#          print "poor_clients24.draw AREA\n";
-#          print "poor_clients5.draw AREA\n";
-
-#	  exit;
-#	}
-	
-#	print "loadRx24.value " . "$loadRx24" . "\n";
-#	print "loadRx5.value " . "$loadRx5" . "\n";
-#	print "loadTx24.value " . "$loadTx24" . "\n";
-#	print "loadTx5.value " . "$loadTx5" . "\n";
-#	print "loadChan24.value " . "$loadChan24" . "\n";
-#	print "loadChan5.value " . "$loadChan5" . "\n";
-#	print "clients24.value " . "$clients24" . "\n";
-#	print "clients5.value " . "$clients5" . "\n";
-#	print "poor_clients24.value " . "$poor_clients24" . "\n";
-#	print "poor_clients5.value " . "$poor_clients5" . "\n";
+	if ($ARGV[0] && $ARGV[0] eq "config") {
+	  print "graph_args --base 1000 -l 0\n";
+	  print "graph_title $APName detail\n";
+	  print "graph_category $bsnAPGroupVlanName\n";
+	  print "graph_vlabel % + abs\n";
+	  print "loadRx24.label RX load on 2.4 GHz radio\n";
+          print "loadRx5.label RX load on 5 GHz radio\n";
+	  print "loadTx24.label TX load on 2.4 GHz radio\n";
+          print "loadTx5.label TX load on 5 GHz radio\n";
+          print "loadChan24.label channel utilization on 2.4 GHz radio\n";
+          print "loadChan5.label channel utilization on 5 GHz radio\n";
+          print "clients24.label clients at mi on 2.4 GHz radio\n";
+          print "clients5.label clients at mi on 5 GHz radio\n";
+          print "poor_clients24.label clients with poor SNR on 2.4 GHz radio\n";
+          print "poor_clients5.label clients with poor SNR on 5 GHz radio\n";
+	  exit;
+	}
+	print "$bsnAPGroupVlanName\n";	
+	print "loadRx24.value " . "$loadRx24" . "\n";
+	print "loadRx5.value " . "$loadRx5" . "\n";
+	print "loadTx24.value " . "$loadTx24" . "\n";
+	print "loadTx5.value " . "$loadTx5" . "\n";
+	print "loadChan24.value " . "$loadChan24" . "\n";
+	print "loadChan5.value " . "$loadChan5" . "\n";
+	print "clients24.value " . "$clients24" . "\n";
+	print "clients5.value " . "$clients5" . "\n";
+	print "poor_clients24.value " . "$poor_clients24" . "\n";
+	print "poor_clients5.value " . "$poor_clients5" . "\n";
 		
-#}
+}

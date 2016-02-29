@@ -1,0 +1,7 @@
+#!/usr/bin/perl
+
+#$target = "blah0x4445434C41524520405420blah blah";
+$target = "57692D46692D6E65747765726B2076616E204D696368C3A86C65";
+$target =~ s/(([0-9a-f][0-9a-f])+)/pack('H*', $1)/ie;
+
+print $target, "\n";
