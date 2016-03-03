@@ -7,6 +7,7 @@
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
     <meta name="description" content="">
     <meta name="author" content="">
+    <meta http-equiv="refresh" content="300" > 
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
     <link rel="icon" href="docs/favicon.ico">
@@ -55,22 +56,22 @@ echo "$ap"; ?></title>
             <li><a href="overviewssids.php">Lijst op SSID</a></li>
            <li class = "active"><a href="overviewaps.php">Lijst op AP</a></li>
            <li><a href="overviewrogues.php">Lijst van rogues</a></li>
-
-          </ul>
-        </div><!--/.nav-collapse -->
+	  </ul>
+  <ul id="navbar" class="nav navbar-nav navbar-right navbar-collapse collapse">
+            <li><a href="../munin">Ga naar Munintoring</a></li>
+        </ul>
+</div><!--/.nav-collapse -->
       </div>
     </nav>
-	  
+
 
 
     <div class="container theme-showcase" role="main">
-		
-
 
       <!-- Main jumbotron for a primary marketing message or call to action -->
       <div class="jumbotron">
         <h2>Overview APs</h2>
-        <p>Hier zie je een overzicht van alle clients verbonden met: <?php 
+        <p>Hier zie je een overzicht van alle clients verbonden met: <?php
 echo "$ap"; ?>. Je kan op een IP klikken voor meer info te krijgen over deze client of op de SSID voor alle clients verbonden met deze SSID.</p>
       </div>
 		<nav>

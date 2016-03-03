@@ -1,0 +1,133 @@
+#!/usr/bin/perl
+
+# 01/03/2016
+# Dit script wordt gebruikt om alle info van een bepaalde AP in de cache te steken.
+# Afhankelijk van de APname wordt de info opgehaald d.m.v. SNMPget/walk
+# De APName wordt gelezen uit de filenaam gegenereerd door het sync_WLCAP script. 
+# Voor elke ap wordt er een script gegenereerd gebaseerd op dit script. (zie sync_WLCAP)
+# Voor elke ap wordt er een MACdec berekend en gebruikt om info op te halen via SNMPget
+
+use diagnostics;
+use strict;
+use warnings;
+use Redis::Client;
+my $client = Redis::Client->new( host => 'localhost', port => 6379 ); #connectie Redis
+
+my $APName=undef;
+$0 =~ /WLCAPinfoincache_(.+)$/; 
+unless (($APName = $1)) {
+  exit 2;
+}
+
+
+my $nas=`/etc/scripts/inputIP`;
+chomp($nas);
+
+my $SNMPCommunity = "public";
+my $SNMPPort = "161";
+my $values;
+
+my $ApMacDec = `/usr/bin/snmpwalk -v 2c -c public $nas .1.3.6.1.4.1.14179.2.2.1.1.3 | perl -ne 'print \$1 if /.+14179.2.2.1.1.3.(.+) =.+$APName\"/'`;
+my $bsnAPGroupVlanName	= ".1.3.6.1.4.1.14179.2.2.1.1.30.$ApMacDec";
+my $snmpgetinfo = `/usr/bin/snmpget -v 2c -c public $nas $bsnAPGroupVlanName`;
+$bsnAPGroupVlanName = $snmpgetinfo =~ s/.+: "(.*)"\n/$1/r; 
+
+my $bsnAPName			= ".1.3.6.1.4.1.14179.2.2.1.1.3.$ApMacDec";
+my $bsnApIpAddress		= ".1.3.6.1.4.1.14179.2.2.1.1.19.$ApMacDec";
+my $bsnAPLocation		= ".1.3.6.1.4.1.14179.2.2.1.1.4.$ApMacDec";
+my $bsnAPModel			= ".1.3.6.1.4.1.14179.2.2.1.1.16.$ApMacDec";
+my $bsnAPSerialNumber		= ".1.3.6.1.4.1.14179.2.2.1.1.17.$ApMacDec";
+$bsnAPGroupVlanName		= ".1.3.6.1.4.1.14179.2.2.1.1.30.$ApMacDec";
+my $bsnApIfNoOfUsers		= ".1.3.6.1.4.1.14179.2.2.2.1.15.$ApMacDec";
+$snmpgetinfo = `/usr/bin/snmpget -v 2c -c public $nas $bsnApIpAddress $bsnAPLocation $bsnAPModel $bsnAPSerialNumber $bsnAPGroupVlanName`;
+	
+my @lines = split /\n/, $snmpgetinfo;
+$bsnApIpAddress = $lines[0] =~ s/.+: (.*)/$1/r;  
+$bsnAPLocation = $lines[1] =~ s/.+: "(.*)"/$1/r; 
+$bsnAPModel = $lines[2] =~ s/.+: "?(.*)\s*"/$1/r; 
+$bsnAPSerialNumber = $lines[3] =~ s/.+: "(.*)"/$1/r; 
+$bsnAPGroupVlanName = $lines[4] =~ s/.+: "(.*)"/$1/r; 
+	
+$bsnApIfNoOfUsers = `/usr/bin/snmpwalk -v 2c -c public $nas $bsnApIfNoOfUsers`;
+@lines = split /\n/, $bsnApIfNoOfUsers;
+my $clients24 = $lines[0] =~ s/.+: (.*)/$1/r;
+my $clients5  = $lines[1] =~ s/.+: (.*)/$1/r;
+	
+my $bsnAPIfLoadRxUtilization	= ".1.3.6.1.4.1.14179.2.2.13.1.1.$ApMacDec";
+my $bsnAPIfLoadTxUtilization	= ".1.3.6.1.4.1.14179.2.2.13.1.2.$ApMacDec";
+my $bsnAPIfLoadChannelUtilization = ".1.3.6.1.4.1.14179.2.2.13.1.3.$ApMacDec";
+my $bsnAPIfLoadNumOfClients	= ".1.3.6.1.4.1.14179.2.2.13.1.4.$ApMacDec";
+my $bsnAPIfPoorSNRClients	= ".1.3.6.1.4.1.14179.2.2.13.1.24.$ApMacDec";
+$snmpgetinfo= `/usr/bin/snmpwalk -v 2c -c public $nas $bsnAPIfLoadRxUtilization`;
+@lines = split /\n/, $snmpgetinfo;
+my $loadRx24;
+my $loadRx5;
+	
+	if($lines[0]){
+ 		$loadRx24 = $lines[0] =~ s/.+: (.*)/$1/r;
+	}else{	$loadRx24=0;}
+
+	if($lines[1]){
+		$loadRx5  = $lines[1] =~ s/.+: (.*)/$1/r; # dit
+	}else{	$loadRx5 =0;}
+	
+
+	$snmpgetinfo= `/usr/bin/snmpwalk -v 2c -c public $nas $bsnAPIfLoadTxUtilization`;
+	@lines = split /\n/, $snmpgetinfo;
+
+	my $loadTx24;
+	my $loadTx5;	
+
+	if($lines[0]){
+		$loadTx24 = $lines[0] =~ s/.+: (.*)/$1/r; 
+	}else{	$loadTx24=0;}
+
+	if($lines[1]){
+                $loadTx5 = $lines[1] =~ s/.+: (.*)/$1/r; 
+        }else{  $loadTx5=0;}
+	
+	$snmpgetinfo= `/usr/bin/snmpwalk -v 2c -c public $nas $bsnAPIfLoadChannelUtilization`;
+	@lines = split /\n/, $snmpgetinfo;
+	
+	my $loadChan24;
+	my $loadChan5;
+
+	if($lines[0]){
+                $loadChan24 = $lines[0] =~ s/.+: (.*)/$1/r;
+        }else{  $loadChan24=0;}
+
+        if($lines[1]){
+                $loadChan5 = $lines[1] =~ s/.+: (.*)/$1/r;
+        }else{  $loadChan5=0;}
+
+	$snmpgetinfo= `/usr/bin/snmpwalk -v 2c -c public $nas $bsnAPIfLoadNumOfClients`;
+	@lines = split /\n/, $snmpgetinfo;
+	
+	if($lines[0]){
+                $clients24 = $lines[0] =~ s/.+: (.*)/$1/r;
+        }else{  $clients24=0;}
+
+        if($lines[1]){
+                $clients5 = $lines[1] =~ s/.+: (.*)/$1/r;
+        }else{  $clients5=0;}
+
+	$snmpgetinfo= `/usr/bin/snmpwalk -v 2c -c public $nas $bsnAPIfPoorSNRClients`;
+	@lines = split /\n/, $snmpgetinfo;
+
+	my $poor_clients24;
+	my $poor_clients5;
+
+	if($lines[0]){
+                $poor_clients24 = $lines[0] =~ s/.+: (.*)/$1/r;
+        }else{  $poor_clients24=0;}
+
+        if($lines[1]){
+                $poor_clients5 = $lines[1] =~ s/.+: (.*)/$1/r;
+        }else{  $poor_clients5=0;}
+
+# alle values worden in een string gestoken, de delimiter is een ",".
+# Scripts die info uit de cache ophalen zullen splitten op de ",". 
+$values ="$APName,$ApMacDec,$bsnAPGroupVlanName,$bsnApIpAddress,$bsnAPLocation,$bsnAPModel,$bsnAPSerialNumber,$loadRx24,$loadRx5,$loadTx24,$loadTx5,$loadChan24,$loadChan5,$clients24,$clients5,$poor_clients24,$poor_clients5";
+print $values;
+$client->hset('apmunin', $APName => $values);
+

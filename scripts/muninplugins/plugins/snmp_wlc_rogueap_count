@@ -1,4 +1,8 @@
 #!/usr/bin/perl 
+
+# 02/03/2015
+# Deze plugin berekent het aantal rogue APs en tekent de grafiek.
+# Via SNMPwalks wordt deze info opgehaald en in arrays gestored. 
 use diagnostics;
 use strict;
 use warnings;

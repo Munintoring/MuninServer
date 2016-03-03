@@ -1,0 +1,8 @@
+#!/bin/bash
+# Dit script genereert het WLCAPinfoincache_x script voor elke AP, in dat script zal de info voor de bepaalde AP in de cache geladen worden.
+# Die scripts zullen dan periodisch runnen in parallel (zie /etc/scripts/ap/cache)
+ls /etc/scripts/ap/cache/ | grep -P "WLCAPinfoincache_.*" | xargs -i rm /etc/scripts/ap/cache/{}
+/usr/bin/snmpwalk -v 2c -c public 10.25.0.5 1.3.6.1.4.1.14179.2.2.1.1.3 | cut -d '"' -f2 | xargs -i ln -s /etc/scripts/ap/WLCAPinfoincache_ /etc/scripts/ap/cache/WLCAPinfoincache_{}
+
+
+

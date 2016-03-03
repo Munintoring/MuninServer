@@ -1,0 +1,81 @@
+#!/usr/bin/perl
+use diagnostics;
+use strict;
+use warnings;
+use Redis::Client;
+my $client = Redis::Client->new( host => 'localhost', port => 6379 );
+
+my @keysbackup = $client->hkeys( 'bsnApIfNoOfUsers' );
+my $back;
+foreach my $backup(@keysbackup){
+        $back = $client->hget('bsnApIfNoOfUsers', $backup);
+        $client->hset('bsnApIfNoOfUsersbackup', $backup => $back);
+}
+
+
+$client->del('bsnApIfNoOfUsers');
+
+my $nas=`/etc/scripts/inputIP`;
+chomp($nas);
+
+my $SNMPCommunity = "public";
+my $SNMPPort = "161";
+
+my @APNames = `/usr/bin/snmpwalk -v 2c -c public $nas .1.3.6.1.4.1.14179.2.2.1.1.3 | cut -d '"' -f2`;
+my $values;
+
+foreach my $APName(@APNames){
+chomp($APName);
+my $ApMacDec = `/usr/bin/snmpwalk -v 2c -c public $nas .1.3.6.1.4.1.14179.2.2.1.1.3 | perl -ne 'print \$1 if /.+14179.2.2.1.1.3.(.+) =.+$APName\"/'`;
+
+my $bsnAPGroupVlanName	= ".1.3.6.1.4.1.14179.2.2.1.1.30.$ApMacDec";
+my $snmpgetinfo = `/usr/bin/snmpget -v 2c -c public $nas $bsnAPGroupVlanName`;
+$bsnAPGroupVlanName = $snmpgetinfo =~ s/.+: "(.*)"\n/$1/r; 
+
+
+	my $bsnAPName			= ".1.3.6.1.4.1.14179.2.2.1.1.3.$ApMacDec";
+	my $bsnApIpAddress		= ".1.3.6.1.4.1.14179.2.2.1.1.19.$ApMacDec";
+	my $bsnAPLocation		= ".1.3.6.1.4.1.14179.2.2.1.1.4.$ApMacDec";
+	my $bsnAPModel			= ".1.3.6.1.4.1.14179.2.2.1.1.16.$ApMacDec";
+	my $bsnAPSerialNumber		= ".1.3.6.1.4.1.14179.2.2.1.1.17.$ApMacDec";
+	$bsnAPGroupVlanName		= ".1.3.6.1.4.1.14179.2.2.1.1.30.$ApMacDec";
+	my $bsnApIfNoOfUsers		= ".1.3.6.1.4.1.14179.2.2.2.1.15.$ApMacDec";
+	$snmpgetinfo = `/usr/bin/snmpget -v 2c -c public $nas $bsnApIpAddress $bsnAPLocation $bsnAPModel $bsnAPSerialNumber $bsnAPGroupVlanName`;
+	
+	my @lines = split /\n/, $snmpgetinfo;
+	$bsnApIpAddress = $lines[0] =~ s/.+: (.*)/$1/r; 
+	$bsnAPLocation = $lines[1] =~ s/.+: "(.*)"/$1/r; 
+	$bsnAPModel = $lines[2] =~ s/.+: "?(.*)\s*"/$1/r; 
+	$bsnAPSerialNumber = $lines[3] =~ s/.+: "(.*)"/$1/r; 
+	$bsnAPGroupVlanName = $lines[4] =~ s/.+: "(.*)"/$1/r; 
+	
+	$bsnApIfNoOfUsers = `/usr/bin/snmpwalk -v 2c -c public $nas $bsnApIfNoOfUsers`;
+	@lines = split /\n/, $bsnApIfNoOfUsers;
+	my $clients24 = $lines[0] =~ s/.+: (.*)/$1/r;
+	my $clients5  = $lines[1] =~ s/.+: (.*)/$1/r;
+	
+	my $bsnAPIfLoadNumOfClients	= ".1.3.6.1.4.1.14179.2.2.13.1.4.$ApMacDec";
+
+	$snmpgetinfo= `/usr/bin/snmpwalk -v 2c -c public $nas $bsnAPIfLoadNumOfClients`;
+	@lines = split /\n/, $snmpgetinfo;
+	
+	if($lines[0]){
+                $clients24 = $lines[0] =~ s/.+: (.*)/$1/r;
+        }else{  $clients24=0;}
+
+        if($lines[1]){
+                $clients5 = $lines[1] =~ s/.+: (.*)/$1/r;
+        }else{  $clients5=0;}
+
+
+$values ="$APName,$ApMacDec,$bsnAPGroupVlanName,$bsnApIpAddress,$bsnAPLocation,$bsnAPModel,$bsnAPSerialNumber,$clients24,$clients5";
+
+
+print "$values\n";
+$client->hset('bsnApIfNoOfUsers', $APName => $values);
+
+}
+
+$client->del('bsnApIfNoOfUsersbackup');
+
+

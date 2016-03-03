@@ -1,10 +1,17 @@
 #!/usr/bin/perl
+# Dit script zorgt ervoor dat alle gegevens die we nodig hebben voor ons overzicht van APs in de cache komen te staan.
+# D.m.v. SNMPget/walk gaan we de informatie opvragen. 
+# In dit script gebruiken we geen MACDec aangezien de AP relatief consistent blijven ( in tegenstelling tot IP-clients)
+# De info wordt opgehaald en in arrays gestoken.
+# @keysbackup wordt gebruikt tijdens de update van de cache, zodat er gedurende de update geen lege pagina getoond wordt, vanaf dat aphashes 
+# geupdate is, wordt de backuphash (aphashesbackup) verwijderd en iphashes gebruikt.
 use diagnostics;
 use strict;
 use warnings;
 use Redis::Client;
-my $client = Redis::Client->new( host => 'localhost', port => 6379 );
+my $client = Redis::Client->new( host => 'localhost', port => 6379 ); # Connectie Redis
 
+#backup maken
 my @keysbackup = $client->hkeys( 'aphashes' );
 my $back;
 foreach my $backup(@keysbackup){
@@ -12,9 +19,8 @@ foreach my $backup(@keysbackup){
         $client->hset('aphashesbackup', $backup => $back);
 }
 
-$client->del('aphashes');
-
-
+$client->del('aphashes'); # cache leegmaken en nieuwe waardes er terug insteken. 
+                          #De scripts die gegevens uit de cache halen gebruiken nu de backup.
 
 my $nas=`/etc/scripts/inputIP`;
 chomp($nas);
@@ -34,20 +40,29 @@ my @locations = `/usr/bin/snmpwalk -v 2c -c public $nas $location | cut -d '"' -
 my $ip= "1.3.6.1.4.1.14179.2.2.1.1.28";
 my @ipforAP = `/usr/bin/snmpwalk -v 2c -c public $nas $ip | cut -d ':' -f2`;
 
-my $bsnAPName = ".1.3.6.1.4.1.14179.2.2.1.1.3";
-my $apcount = `/usr/bin/snmpwalk -v 2c -c public $nas $bsnAPName 2>/dev/null | wc -l`;
+#my $bsnAPName = ".1.3.6.1.4.1.14179.2.2.1.1.3";
+#my $apcount = `/usr/bin/snmpwalk -v 2c -c public $nas $bsnAPName 2>/dev/null | wc -l`;
 
 my $bsnAPVlan = ".1.3.6.1.4.1.14179.2.2.1.1.30";
 my @apvlan = `/usr/bin/snmpwalk -v 2c -c public $nas $bsnAPVlan | cut -d '"' -f2`;
 
+my $switchName =".1.3.6.1.4.1.9.9.623.1.3.1.1.6";
+my @switchnames = `/usr/bin/snmpwalk -v 2c -c public $nas $switchName | cut -d '"' -f2`;
+
+my $switchPort =".1.3.6.1.4.1.9.9.623.1.3.1.1.9";
+my @switchports = `/usr/bin/snmpwalk -v 2c -c public $nas $switchPort | cut -d '"' -f2`;
+
+my $switchMAC =".1.3.6.1.4.1.9.9.623.1.3.1.1.8";
+my @switchmacs = `/usr/bin/snmpwalk -v 2c -c public $nas $switchMAC | cut -d ':' -f2`;
 
 my $limit = scalar(@APNames);
 my $j=0;
 my $values;
 
+# Vullen van cache
 for(my $i=0 ; $i < $limit ; $i++) {
 	$j = ($i*2);
-	
+	# chompen newlines
 	chomp($APNames[$i]);
 	chomp($usersperap[$j]);
 	chomp($usersperap[$j+1]);
@@ -55,18 +70,32 @@ for(my $i=0 ; $i < $limit ; $i++) {
 	chomp($locations[$i]);
 	chomp($ipforAP[$i]);
 	chomp($apvlan[$i]);
+	chomp($switchnames[$i]);	
+	chomp($switchports[$i]);	
+	chomp($switchmacs[$i]);	
+	$usersperap[$j]	=~ s/^\s+//; # spaties verwijderen
+	$usersperap[$j+1]=~ s/^\s+//; # spaties verwijderen
+	$MACAPS[$i] =~ s/^\s+//; # spaties verwijderen
+	$locations[$i] =~ s/^\s+//; # spaties verwijderen
+	$ipforAP[$i] =~ s/^\s+//; # spaties verwijderen
+	$apvlan[$i] =~ s/^\s+//; # spaties verwijderen
+	$switchnames[$i] =~ s/^\s+//; # spaties verwijderen
+	$switchports[$i] =~ s/^\s+//; # spaties verwijderen
 	
-	$usersperap[$j]	=~ s/^\s+//;
-	$usersperap[$j+1]=~ s/^\s+//;
-	$MACAPS[$i] =~ s/^\s+//;
-	$locations[$i] =~ s/^\s+//;
-	$ipforAP[$i] =~ s/^\s+//;
-	$apvlan[$i] =~ s/^\s+//;
-	$values= "$APNames[$i],$MACAPS[$i],$usersperap[$j],$usersperap[$j+1],$locations[$i],$ipforAP[$i],$apvlan[$i]";
-	
+# FastEthernet <-> f 
+# GigabitEthernet <-> g 
+# Dit doen we voor de leesbaarheid in de tabel te behouden/
+	my $val="FastEthernet";
+	my $val2="f";
+	my $val3="GigabitEthernet";
+	my $val4="g";
+	$switchports[$i] =~s/$val/$val2/g;
+	$switchports[$i] =~s/$val3/$val4/g;
+	$switchmacs[$i] =~ s/^\s+//;
+	$values= "$APNames[$i],$MACAPS[$i],$usersperap[$j],$usersperap[$j+1],$locations[$i],$ipforAP[$i],$apvlan[$i],$switchnames[$i],$switchports[$i],$switchmacs[$i]";
 	$client->hset('aphashes', $APNames[$i] => $values);
-
+	# aphashes opvullen (key = APName , values= andere gegevens in string (delimiter ",") )
 }
 
-$client->del('aphashesbackup');
-`date > /etc/scripts/dates/dateaps`
+$client->del('aphashesbackup');# De cache is geupdate, de backup mag verwijderd worden.
+`date > /etc/scripts/dates/dateaps` # printen van datum info in file

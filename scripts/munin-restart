@@ -1,5 +1,5 @@
 #!/bin/bash
- 
+# Dit script dient om munin te restarten, dit hebben we vooral gebruikt in de beginfase van ons project. 
 service munin-node restart
 echo "munin-node restart : ok"
 service apache2 restart

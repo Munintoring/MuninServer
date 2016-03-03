@@ -4,12 +4,28 @@ use strict;
 use warnings;
 use Redis::Client;
 
+# 01/03/2016
+
+# In dit script wordt alle info opgehaald uit de Redis cache vanuit de hash aphashes.
+# Het script zal een uitgebreuid overzicht van een AP genereren en een lijst met alle users op een bepaalde AP genereren.
+# voorbeeld  (http://193.191.187.33/monitoring/toonclientsperap.php?AP=APa46c.2ac9.441c) 
+
+# aphashesbackup wordt gebruikt wanneer de cache aan het updaten is, zodat er geen lege lijst getoond wordt maar tijdelijk het oude overzicht.
+
 my $client = Redis::Client->new( host => 'localhost', port => 6379 );
 my $AP = $ARGV[0];
 
-my $values = $client->hget( 'aphashes', $AP );
-my @value=  split /,/, $values;
+my $hash="aphashes";
+my @keys = $client->hkeys( 'aphashes' );
+my @keysbackup = $client->hkeys( 'aphashesbackup' );
 
+if(@keysbackup){
+@keys = @keysbackup;
+$hash = "aphashesbackup";
+}
+
+my $values = $client->hget( $hash, $AP );
+my @value=  split /,/, $values;
 
 my $APClean = $AP;
 $APClean =~ tr/./_/;
@@ -17,10 +33,11 @@ $APClean =~ tr/-/_/;
 #APClean zorgt er voor dat de . en - uit de links worden gehaald want munin zet deze automatisch om in _ Nu werkt elke link naar de grafieken
 my $ApLoad = "/munin/WLC/WLC/snmp_wlc_ap_".$APClean."_bsnAPIfLoad.html";
 my $ApNoOfUsers = "/munin/WLC/WLC/snmp_wlc_ap_".$APClean."_bsnApIfNoOfUsers.html";
+	print "<script src='sorttable.js'></script>";
 
-     print " <div class='row'>";
+     	print " <div class='row'>";
         print "<div class='col-md-8'>";
-        print  "<table class='table table-striped'>";
+        print  "<table class=' table table-striped'>";
         print "<tbody>";
 
         print "<th> Grafiek number of Users </th>";
@@ -35,31 +52,36 @@ my $ApNoOfUsers = "/munin/WLC/WLC/snmp_wlc_ap_".$APClean."_bsnApIfNoOfUsers.html
         print "<tr><th> Users op 2.4GHz </th>";
         print "<td>$value[2]</td></tr>";
 
-        print "<tr><th> Users op 2.4GHz </th>";
+        print "<tr><th> Users op 5GHz </th>";
         print "<td>$value[3]</td></tr>";
-my $temp = $value[2]+$value[3];
+	my $temp = $value[2]+$value[3];
         print "<tr><th> Totaal Users </th>";
         print "<td>$temp</td></tr>";
 
         print "<tr><th> IP AP </th>";
         print "<td>$value[5]</td></tr>";
+        print "<tr><th> MAC AP </th>";
+        print "<td>$value[1]</td></tr>";
+        
+	print "<tr><th> Switch name </th>";
+        print "<td>$value[7]</td></tr>";
+        
+	print "<tr><th> Switch Port </th>";
+        print "<td>$value[8]</td></tr>";
 
+	print "<tr><th> Switch MAC </th>";
+        print "<td>$value[9]</td></tr>";
 
    print "</tbody></table></div></div>";
 
-#print "<h3><a href = '$ApNoOfUsers'>Grafiek voor $AP number of users</a></h3>";
-#print "<h3><a href = '$ApLoad'>Grafiek voor $AP detailled</a></h3>";
-#print "<h4>Locatie:$value[4]</h4>";
-#print "<h4>Users op 2.4 GHz: $value[2]</h4>";
-#print "<h4>Users op 5 GHz: $value[3]</h4>";
-#print "<h4>Totaal: $temp</h4>";
-print "<h4>Lijst met alle current users - Lege lijst? Geen users op deze AP!</h4>";
+
+# de APnaam zal gebruikt worden om te greppen op het algemene overzicht om de userlijst te genereren.
+print "<h4>Lijst met alle current users - (Lege lijst? Geen users op deze AP!)</h4>";
 print "<div class='row'>";
 print "<div class='col-md-12'>";
-print  "<table class='table table-striped'>";
+print  "<table class='sortable table table-striped'>";
 print "<tr>\n";
-print "<th>IP-address</th>\n";
-print "<th>Username</th>\n";
+print "<th class='sorttable_nosort'>IP-address</th>\n";print "<th>Username</th>\n";
 print "<th>MAC-address </th>\n";
 print "<th>SSID</th>\n";
 print "<th>MAC-AP (Base Radio MAC)</th>\n";

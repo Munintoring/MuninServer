@@ -3,16 +3,21 @@ use diagnostics;
 use strict;
 use warnings;
 use Switch;
+# 01/03/2016
+# Dit is een oud script en is vervangen door ToonOverzichtIPCache (in /etc/scripts/cache)
+# In dit script wordt alle info opgehaald d.m.v. SNMPwalks en in arrays gestoken en afgeprint d.m.v. een for-loop.
+# Deze aanpak is fout en genereert dus een foutief overzicht wanneer er users wegvallen of bijkomen.
+
 
 my $nas=`/etc/scripts/inputIP`;
 chomp($nas);
+
 #ophalen ip-adressen clients
 my $IP	 =".1.3.6.1.4.1.14179.2.1.4.1.2"; #$bsnMobileStationIpAddress 
 my @snmpgetinfoIP = `/usr/bin/snmpwalk -v 2c -c public $nas $IP | cut -d ' ' -f4`;
 
 my $username = ".1.3.6.1.4.1.14179.2.1.4.1.3";
 my @snmpgetinfoUsername = `/usr/bin/snmpwalk -v 2c -c public $nas $username | cut -d '"' -f2`;
-
 
 #ophalen mac-adressen clients
 my $MAC =  ".1.3.6.1.4.1.14179.2.1.4.1.1"; #bsnMobileStationMacAddress
@@ -30,14 +35,11 @@ my @snmpgetinfoAPMacAddress = `/usr/bin/snmpwalk -v 2c -c public $nas $APMacAddr
 my @MAClist = `/usr/bin/snmpwalk -v 2c -c public $nas .1.3.6.1.4.1.14179.2.1.4.1.1 | cut -d ' ' -f1`;
 my @MACDeclist; 
 
+# verkrijgen van MACDeclist , maar verder niet gebruikt in dit script wel in de vernieuwde.
 my $plimit = scalar(@MAClist);
-for (my $p =0 ; $p < $plimit ; $p++)
-{
-
+for (my $p =0 ; $p < $plimit ; $p++){
 	$MACDeclist[$p] = substr("$MAClist[$p]",30);
-
 }
-
 
 #ophalen APName
 my $APName = ".1.3.6.1.4.1.14179.2.2.1.1.3"; #bsnAPName
@@ -49,7 +51,8 @@ my @snmpDot3MacAddress = `/usr/bin/snmpwalk -v 2c -c public $nas $APDot3MacAddre
 
 my $end = scalar(@snmpAPName);
 
-#hashmap : key = Base Radio Mac, value = APName
+#hashmap : key = Base Radio Mac, value = APName 
+# analoog aan ToonAlgemeenOverzicht hashmap
 my %hashAP;
 for(my $j=0;$j< $end; $j++){
 	chomp($snmpDot3MacAddress[$j]);
@@ -68,9 +71,7 @@ my @snmpgetinfoBytesReceived = `/usr/bin/snmpwalk -v 2c -c public $nas $bytesrec
 my $bytessent = ".1.3.6.1.4.1.14179.2.1.6.1.3";
 my @snmpgetinfoBytesSent = `/usr/bin/snmpwalk -v 2c -c public $nas $bytessent | cut -d ':' -f2`;
 
-
 my $limit = scalar(@snmpgetinfoIP);
-
 
 for(my $i=0 ; $i < $limit ; $i++) {
 	
@@ -83,7 +84,7 @@ for(my $i=0 ; $i < $limit ; $i++) {
 	chomp($snmpgetinfoBytesReceived[$i]);
 	chomp($snmpgetinfoBytesSent[$i]);
 	if(!$snmpgetinfoIP[$i]){
-}else{
+	}else{
 	print "\n";
 	print " <div class='row'>";
         print "<div class='col-md-8'>";
@@ -113,6 +114,8 @@ for(my $i=0 ; $i < $limit ; $i++) {
 	print "<td>";
 
 #dot11a(1), dot11b(2), dot11g(3), unknown(4), mobile(5)
+# switch gebruikt om codes om te zetten in string-waardes.
+# uitgebreid in het nieuwe script.
 
 	switch($snmpgetinfoProtocol[$i]){
   		 case 1            { print "dot11a (1)" }

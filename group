@@ -64,3 +64,5 @@ zwijn:x:1000:
 sambashare:x:124:zwijn
 munin:x:125:
 ring:x:1001:
+postfix:x:126:
+postdrop:x:127:

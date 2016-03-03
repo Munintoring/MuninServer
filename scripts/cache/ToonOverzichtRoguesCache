@@ -1,27 +1,33 @@
 #!/usr/bin/perl
+
+# 01/03/2015
+# Dit script genereert een overzicht van alle rogues (met gegevens : IP,username,MAC,SSID,...)
+# (voorbeeld http://193.191.187.33/monitoring/overviewrogues.php)
+# Om het overzicht te tonen worden alle gegevens uit de cache gehaald ( hash 'roguehashes) die er d.m.v. het script RogueInfoincache ingestoken zijn.
+# @keysbackup wordt gebruikt tijdens de update van de cache, zodat er gedurende de update geen lege pagina getoond wordt, vanaf dat roguehashes 
+# geupdate is, wordt de backuphash (roguehashesbackup) verwijderd en iphashes gebruikt.
 use diagnostics;
 use strict;
 use warnings;
 use Redis::Client;
 
-my $client = Redis::Client->new( host => 'localhost', port => 6379 );
-
-my @keys = $client->hkeys( 'roguehashes' );
-
-
+my $client = Redis::Client->new( host => 'localhost', port => 6379 ); # Connectie Redis
+my @keys = $client->hkeys( 'roguehashes' ); 
 
 my $hash="roguehashes";
-my @keys = $client->hkeys( 'roguehashes' );
-my @keysbackup = $client->hkeys( 'roguehashesbackup' );
+my @keys = $client->hkeys( 'roguehashes' );# standaard worden de keys van roguehashes opgehaald
+my @keysbackup = $client->hkeys( 'roguehashesbackup' );# keys uit iphashesbackup ophalen (indien ze niet bestaan is @keysbackup leeg)
 
-if(@keysbackup){
-@keys = @keysbackup;
-$hash = "roguehashesbackup";
+
+if(@keysbackup){#als er een backup bestaat -> update is bezig  -> gebruik de backup
+	@keys = @keysbackup;
+	$hash = "roguehashesbackup";
 }
 
+# hoofdingen tabel + sorteerbaar + zoekbalkje
 print "<div class='form-group'>";
 print "<label>Zoeken in de tabel</label>";
-print "<input type='text' class='form-control' id='search' placeholder='Typ simpele regexen om te zoeken in de tabel'>";
+print "<input type='text' class='form-control' id='search' placeholder='Typ simpele zoektermen om te zoeken in de tabel.'>";
 print "</div>";
 print "<script src='sorttable.js'></script>";
 print "<div class='row'>";
@@ -34,13 +40,13 @@ print "<th class='sorttable_nosort'>First Time Reported</th>";
 print "<th class='sorttable_nosort'>Last Time Reported</th>";
 print "</tr>\n";
 
-
+# elke waarde in de cache wordt in de tabel gestoken.
 my $key;
-foreach $key (@keys){  # key = APname
+foreach $key (@keys){  
 
 
-my $values = $client->hget( $hash, $key );
-my @value=  split /,/, $values;
+my $values = $client->hget( $hash, $key ); # key = MAC AP
+my @value=  split /,/, $values;  # values gesplit op ","
 
 	print "\n";
 	print "<tr>";

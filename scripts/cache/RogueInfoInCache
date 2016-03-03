@@ -1,10 +1,17 @@
 #!/usr/bin/perl
+
+#01/03/2016
+# Dit script zorgt ervoor dat alle gegevens die we nodig hebben voor ons overzicht van rogues in de cache komen te staan.
+# D.m.v. SNMPget/walk gaan we de informatie opvragen. 
+# @keysbackup wordt gebruikt tijdens de update van de cache, zodat er gedurende de update geen lege pagina getoond wordt, vanaf dat roguehashes 
+# geupdate is, wordt de backuphash (roguehashesbackup) verwijderd en iphashes gebruikt.
 use diagnostics;
 use strict;
 use warnings;
 use Redis::Client;
-my $client = Redis::Client->new( host => 'localhost', port => 6379 );
+my $client = Redis::Client->new( host => 'localhost', port => 6379 ); #Connectie Redis
 
+#backup maken
 my @keysbackup = $client->hkeys( 'roguehashes' );
 my $back;
 foreach my $backup(@keysbackup){
@@ -12,30 +19,27 @@ foreach my $backup(@keysbackup){
         $client->hset('roguehashesbackup', $backup => $back);
 }
 
+$client->del('roguehashes');# cache leegmaken en nieuwe waardes er terug insteken. 
+                          #De scripts die gegevens uit de cache halen gebruiken nu de backup.
 
-$client->del('roguehashes');
-
-#my $nas="192.168.1.2";
 my $nas=`/etc/scripts/inputIP`;
 chomp($nas);
 
 my $oid         = ".1.3.6.1.4.1.14179.2.1.7.1.1";
 my @snmpIPinfo  = `/usr/bin/snmpwalk -v 2c -c public $nas $oid`;
 
-#print @snmpIPinfo;
 my @MACslist = grep{/(3.6.1.4.1.14179.2.1.7.1.1\.)/} @snmpIPinfo; #bsnRogueAPDot11MacAddress
-#my @MACs = `echo '@MAC' | cut -d ':' -f2`;
 my @MACDeclist;
 
 my $plimit = scalar(@MACslist);
 my @split;
 my @values;
 
-for (my $p =0 ; $p < $plimit ; $p++)
-{
+#MACDec lijst genereren voor ophalen van bepaald gegeven.
+for (my $p =0 ; $p < $plimit ; $p++){
         $MACDeclist[$p] = substr("$MACslist[$p]",30);
         @split = split /=/,$MACDeclist[$p];
-        $values[$p] = $split[0];
+        $values[$p] = $split[0]; # Enkel MACDec eruit halen
 }
 
 my $i=0;
@@ -48,19 +52,25 @@ my @StartTimes;
 my $LastTime;
 my @LastTimes;
 
+# Voor elke MACdec in de lijst gaan we de gegevens ophalen en in arrays steken.
 foreach  my $value(@values){
+	
+	#MAC-adres Rogue AP ophalen
+	#$APMacRogue =".1.3.6.1.4.1.14179.2.1.7.1.1.$value";
+	#$APMacRogues[$i]= `/usr/bin/snmpget -v 2c -c public $nas $APMacRogue | cut -d ':' -f 2`;
 
-	$APMacRogue =".1.3.6.1.4.1.14179.2.1.7.1.1.$value";
-	$APMacRogues[$i]= `/usr/bin/snmpget -v 2c -c public $nas $APMacRogue | cut -d ':' -f 2`;
+	my @splitt = split /\./, $value;
+        $APMacRogues[$i] =uc(sprintf "%02x %02x %02x %02x %02x %02x\n",$splitt[0],$splitt[1],$splitt[2],$splitt[3],$splitt[4],$splitt[5]);
 
+	#SSID Rogue AP ophalen
 	$APSSID=".1.3.6.1.4.1.14179.2.1.7.1.11.$value";
 	$APSSIDs[$i]= `/usr/bin/snmpget -v 2c -c public $nas $APSSID | cut -d '"' -f 2`;
 
-#/usr/bin/snmpget -v 2c -c public 10.25.0.5 .1.3.6.1.4.1.14179.2.1.7.1.11
-
+	# First Time Reported Rogue AP ophalen
 	$StartTime=".1.3.6.1.4.1.14179.2.1.7.1.3.$value";
 	$StartTimes[$i]= `/usr/bin/snmpget -v 2c -c public $nas $StartTime | cut -d '"' -f 2`;
 
+	# Last time Reported Rogue AP ophalen
 	$LastTime=".1.3.6.1.4.1.14179.2.1.7.1.4.$value";
 	$LastTimes[$i]= `/usr/bin/snmpget -v 2c -c public $nas $LastTime | cut -d '"' -f 2`;
 
@@ -71,6 +81,8 @@ foreach  my $value(@values){
 my $limit = scalar(@APMacRogues);
 my $values;
 my @splitHex;
+
+# Vullen van de cache
 for(my $i=0 ; $i < $limit; $i++) {
         chomp($APMacRogues[$i]);
         chomp($APSSIDs[$i]);
@@ -78,23 +90,34 @@ for(my $i=0 ; $i < $limit; $i++) {
         chomp($LastTimes[$i]);
 
 	# Dit zet de Hex-String om in ASCII
+	# Sommige SSID worden getoond als HEX-String, de volgende code zet dit om naar ASCII
 	if($APSSIDs[$i] =~m/Hex/){
-	@splitHex =split /:/, $APSSIDs[$i];
-	(my $HexString = $splitHex[1]) =~ s/\s//g;
-	$HexString =~ s/(([0-9a-f][0-9a-f])+)/pack('H*', $1)/ie;
-	#print $HexString;
-	$APSSIDs[$i]=$HexString;
+		@splitHex =split /:/, $APSSIDs[$i];
+		(my $HexString = $splitHex[1]) =~ s/\s//g; # verwijderen spaties
+		$HexString =~ s/(([0-9a-f][0-9a-f])+)/pack('H*', $1)/ie; # hex -> ASCII
+		$APSSIDs[$i]=$HexString;
 	}
 
 	if($APSSIDs[$i] eq ""){
-	$APSSIDs[$i]="leeg";
+		$APSSIDs[$i]="hidden"; # Sommige SSIDS zijn hidden, daarom geven wij ze ook de waarde "hidden".
 	}
 	
 	$values = "$APMacRogues[$i],$APSSIDs[$i],$StartTimes[$i],$LastTimes[$i]";
 	$client->hset('roguehashes', $APMacRogues[$i] => $values);
+	# roguehashes opvullen (key = APMac , values= andere gegevens in string (delimiter ",") )
 
 }
 
-$client->del('roguehashesbackup');
+# Soms komen of gaan rogues waardoor sommige informatie niet meer opgevraagd kan worden (door MACDec) en krijgen we een "error" terug.
+# We loopen overheen de apmac-lijst om deze waardes uit de cache te laten zodat ze niet in het overzicht getoond worden.
+foreach my $apmac (@APMacRogues){
 
-`date > /etc/scripts/dates/daterogues`;
+if ($apmac =~ m/Such/) {
+         $client->hdel('roguehashes', $apmac);
+}
+
+}
+
+$client->del('roguehashesbackup');# De cache is geupdate, de backup mag verwijderd worden.
+
+`date > /etc/scripts/dates/daterogues`;# printen van datum info.

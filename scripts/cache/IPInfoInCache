@@ -1,11 +1,18 @@
 #!/usr/bin/perl
+
+#01/03/2016
+# Dit script zorgt ervoor dat alle gegevens die we nodig hebben voor ons overzicht op IP in de cache komen te staan.
+# D.m.v. SNMPget/walk gaan we de informatie opvragen. 
+# @keysbackup wordt gebruikt tijdens de update van de cache, zodat er gedurende de update geen lege pagina getoond wordt, vanaf dat iphashes 
+# geupdate is, wordt de backuphash (iphashesbackup) verwijderd en iphashes gebruikt.
+
 use diagnostics;
 use strict;
 use warnings;
 use Redis::Client;
 my $client = Redis::Client->new( host => 'localhost', port => 6379 );
 
-
+#backup maken
 my @keysbackup = $client->hkeys( 'iphashes' );
 my $back;
 foreach my $backup(@keysbackup){
@@ -13,32 +20,29 @@ foreach my $backup(@keysbackup){
         $client->hset('iphashesbackup', $backup => $back);
 }
 
-$client->del('iphashes');
+$client->del('iphashes'); # cache leegmaken en nieuwe waardes er terug insteken. 
+			  #De scripts die gegevens uit de cache halen gebruiken nu de backup.
 
-#my $nas = '192.168.1.2';
 my $nas=`/etc/scripts/inputIP`;
 chomp($nas);
 
 my $oid         = ".1.3.6.1.4.1.14179.2.1.4.1.1";
 my @snmpIPinfo  = `/usr/bin/snmpwalk -v 2c -c public $nas $oid`;
 
-#print @snmpIPinfo;
 my @MACslist = grep{/(3.6.1.4.1.14179.2.1.4.1.1\.)/} @snmpIPinfo;
-#my @MACs = `echo '@MAC' | cut -d ':' -f2`;
 my @MACDeclist;
 
 my $plimit = scalar(@MACslist);
 my @split;
 my @values;
 
+#MACDec lijst genereren voor ophalen van bepaald gegeven.
 for (my $p =0 ; $p < $plimit ; $p++)
 {
         $MACDeclist[$p] = substr("$MACslist[$p]",30);
 	@split = split /=/,$MACDeclist[$p];
-	$values[$p] = $split[0];
+	$values[$p] = $split[0];  # Enkel MACDec eruit halen
 }
-
-
 
 my $bsnIP;
 my $bsnMAC;
@@ -57,38 +61,48 @@ my @ssidlist;
 my @protocollist;
 my @bytesrelist;
 my @bytesselist;
-#print @snmpIPinfo;
-foreach  my $value(@values){
-	$bsnMAC  = ".1.3.6.1.4.1.14179.2.1.4.1.1.$value";
-	$MAClist[$i] = `/usr/bin/snmpget -v 2c -c public $nas $bsnMAC | cut -d ':' -f 2`;
+
+# Voor elke MACdec in de lijst gaan we de gegevens ophalen en in arrays steken.
+foreach my $value(@values){
+	#MAC-adres ophalen
+	#$bsnMAC  = ".1.3.6.1.4.1.14179.2.1.4.1.1.$value";
+	#$MAClist[$i] = `/usr/bin/snmpget -v 2c -c public $nas $bsnMAC | cut -d ':' -f 2`;
 	
+	my @splitt = split /\./, $value;
+	$MAClist[$i] =uc(sprintf "%02x %02x %02x %02x %02x %02x\n",$splitt[0],$splitt[1],$splitt[2],$splitt[3],$splitt[4],$splitt[5]);
+
+	#IP-adres ophalen
 	$bsnIP  = ".1.3.6.1.4.1.14179.2.1.4.1.2.$value";
 	$IPlist[$i] = `/usr/bin/snmpget -v 2c -c public $nas $bsnIP | cut -d ':' -f 2`;
 
+	#Usernaam ophalen
 	$bsnuser  = ".1.3.6.1.4.1.14179.2.1.4.1.3.$value";
 	$userlist[$i] = `/usr/bin/snmpget -v 2c -c public $nas $bsnuser | cut -d '"' -f 2`;
 	
+	# MAC-adres AP ophalen
 	$bsnmacap  = ".1.3.6.1.4.1.14179.2.1.4.1.4.$value";
 	$macaplist[$i] = `/usr/bin/snmpget -v 2c -c public $nas $bsnmacap | cut -d ':' -f 2`;
 
+	# SSID ophalen
 	$bsnssid  = ".1.3.6.1.4.1.14179.2.1.4.1.7.$value";
 	$ssidlist[$i] = `/usr/bin/snmpget -v 2c -c public $nas $bsnssid | cut -d '"' -f 2`;
 	
+	# Protocol ophalen
         $bsnprotocol  = ".1.3.6.1.4.1.14179.2.1.4.1.25.$value";
         $protocollist[$i] = `/usr/bin/snmpget -v 2c -c public $nas $bsnprotocol | cut -d ':' -f 2`;
 
+	# Bytes Received ophalen
         $bsnbytesre  = ".1.3.6.1.4.1.14179.2.1.6.1.2.$value";
         $bytesrelist[$i] = `/usr/bin/snmpget -v 2c -c public $nas $bsnbytesre | cut -d ':' -f 2`;
 
+	# Bytes Sent ophalen
         $bsnbytesse  = ".1.3.6.1.4.1.14179.2.1.6.1.3.$value";
         $bytesselist[$i] = `/usr/bin/snmpget -v 2c -c public $nas $bsnbytesse | cut -d ':' -f 2`;
 	
-
 	$i++;
 }
 
-
-
+# AP-MAC ophalen
 my $APMacAddress = ".1.3.6.1.4.1.14179.2.2.1.1.1"; # bsnAPDot3MacAddress
 my @APMacs = `/usr/bin/snmpwalk -v 2c -c public $nas $APMacAddress`;
 
@@ -97,8 +111,9 @@ my $jlimit = scalar(@APMacs);
 my @APMACDeclist;
 my @splitAP;
 my @APvalues;
-for (my $j =0 ; $j < $jlimit ; $j++)
-{
+
+# AP MACDec lijst genereren ( voor info over AP op te halen)
+for (my $j =0 ; $j < $jlimit ; $j++){
        $APMACDeclist[$j] = substr("$APMacs[$j]",30);
        @splitAP = split /=/,$APMACDeclist[$j];
        $APvalues[$j] = $splitAP[0];
@@ -107,40 +122,58 @@ for (my $j =0 ; $j < $jlimit ; $j++)
 my @APnames;
 my $o=0;
 my @MACAPlist;
+
+# ophalen van AP gegevens en in array steken
 foreach my $apvalue(@APvalues){
-
-my $bsnAPname  = ".1.3.6.1.4.1.14179.2.2.1.1.3.$apvalue";
-$APnames[$o] = `/usr/bin/snmpget -v 2c -c public $nas $bsnAPname | cut -d '"' -f2`;
-
-my $MACAP = ".1.3.6.1.4.1.14179.2.2.1.1.1.$apvalue";
-$MACAPlist[$o] = `/usr/bin/snmpget -v 2c -c public $nas $MACAP | cut -d ':' -f2`;
-
-$o++;
-
-
+	my $bsnAPname  = ".1.3.6.1.4.1.14179.2.2.1.1.3.$apvalue";
+	$APnames[$o] = `/usr/bin/snmpget -v 2c -c public $nas $bsnAPname | cut -d '"' -f2`;
+	my $MACAP = ".1.3.6.1.4.1.14179.2.2.1.1.1.$apvalue";
+	$MACAPlist[$o] = `/usr/bin/snmpget -v 2c -c public $nas $MACAP | cut -d ':' -f2`;
+	$o++;
 }
 
-
 my $end = scalar(@MACAPlist);
-
 my %hashAP;
+
+# In deze hashmap steken we als key het Dot3MacAddress en als value de APName, zodat we deze op die manier kunnen opvragen.
+# De APName waarop het mobilestation zit kan niet rechtstreeks opgehaald worden, maar wel het MAC-adres. 
+# We geven dus het opgehaalde MAC-adres mee in de hashmap om de APName te verkrijgen.
 for(my $j=0;$j< $end; $j++){
       	chomp($MACAPlist[$j]);
       	chomp($APnames[$j]);
 	$hashAP{$MACAPlist[$j]} = "$APnames[$j]";
 }
-
+my %hashusers;
 my $limit = scalar(@MAClist);
 my $values;
 my $nameap;
 my $macvalues;
+# Vullen van de cache
+
 for(my $i=0 ; $i < $limit ; $i++) {
 
+        if ($userlist[$i] ne ""){
+                chomp($userlist[$i]);}
 
+         $hashusers{$userlist[$i]} = $hashusers{$userlist[$i]}+1 ;
+}
+
+$hashusers{""} = "" ;
+
+
+for( $i=0 ; $i < $limit ; $i++) {
+
+
+	#chompen van newlines
         if ($IPlist[$i]  ne "") {
                 chomp($IPlist[$i]);}
         if ($MAClist[$i] ne ""){
-                chomp($MAClist[$i]);}
+                chomp($MAClist[$i]);
+	
+		# if ($MAClist[$i] != m/Hex-STRING/){
+		 #	$MAClist[$i] =" 00000000";
+		#	}
+	}
         if ($userlist[$i] ne ""){
                 chomp($userlist[$i]);}
         if ($macaplist[$i] ne ""){
@@ -150,7 +183,8 @@ for(my $i=0 ; $i < $limit ; $i++) {
 			$nameap = "undefined";
 		}else{
 			$nameap = $hashAP{$macaplist[$i]};
-			chomp($nameap);}
+			chomp($nameap);
+		}
 	}
 
         if ($ssidlist[$i] ne ""){
@@ -165,26 +199,24 @@ for(my $i=0 ; $i < $limit ; $i++) {
         if ($bytesselist[$i] ne ""){
                 chomp($bytesselist[$i]);}
 
-	$IPlist[$i] =~ s/^.//;
-	$protocollist[$i]=~ s/^\s+//;
-	$bytesrelist[$i] =~ s/^\s+//;
-	$bytesselist[$i] =~ s/^\s+//;
-        $values ="$IPlist[$i],$userlist[$i],$MAClist[$i],$ssidlist[$i],$macaplist[$i],$nameap,$protocollist[$i],$bytesrelist[$i],$bytesselist[$i]";
-        $client->hset('iphashes', $IPlist[$i] => $values);
-	$client->hset('machashes',$MAClist[$i] => $values);
-	$client->hset('userhashes',$userlist[$i]=> $values);
-	
+	$IPlist[$i] =~ s/^.//;        # resterende spaties verwijderen
+	$protocollist[$i]=~ s/^\s+//; # resterende spaties verwijderen
+ 	$bytesrelist[$i] =~ s/^\s+//; # resterende spaties verwijderen
+	$bytesselist[$i] =~ s/^\s+//; # resterende spaties verwijderen
+        
+	$values ="$IPlist[$i],$userlist[$i],$MAClist[$i],$ssidlist[$i],$macaplist[$i],$nameap,$protocollist[$i],$bytesrelist[$i],$bytesselist[$i],$hashusers{$userlist[$i]}";
+        $client->hset('iphashes', $IPlist[$i] => $values); # iphashes opvullen (key = IP , values= andere gegevens in string (delimiter ",") )
 }
 
-
+# Soms komen of gaan clients waardoor sommige informatie niet meer opgevraagd kan worden (door MACDec) en krijgen we een "error" terug.
+# We loopen overheen de IP-lijst om deze waardes uit de cache te laten zodat ze niet in het overzicht getoond worden.
+# Clients die net op deze momenten connecteren zullen bij de volgende update in de lijst komen te staan (interval van 5 min)
 foreach my $ip (@IPlist){
-
-if ($ip =~ m/Such/) {
- 	 #print $ip;
-	 $client->hdel('iphashes', $ip);
+	if ($ip =~ m/Such/) {
+		 $client->hdel('iphashes', $ip);
+	}
 }
 
-}
-$client->del('iphashesbackup');
+$client->del('iphashesbackup'); # De cache is geupdate, de backup mag verwijderd worden.
 
-`date > /etc/scripts/dates/dateips`
+`date > /etc/scripts/dates/dateips` # printen van datum info. 

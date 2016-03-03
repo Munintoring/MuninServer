@@ -4,12 +4,24 @@ use strict;
 use warnings;
 
 
-my $total = `/etc/scripts/cache/ToonOverzichtIP | grep -c $ARGV[0]`;
+my $temp="";
+#temp= IP/MAC/Username
+if($ARGV[1] && $ARGV[2] && $ARGV[3] && $ARGV[4] && $ARGV[5]){  # komt overeen met een MAC (spaties)
+$temp = "$ARGV[0] "."$ARGV[1] "."$ARGV[2] "."$ARGV[3] "."$ARGV[4] "."$ARGV[5]";
+}elsif(!$ARGV[0]){
+
+print "Gelieve een waarde mee te geven";
+}else{
+$temp = "$ARGV[0]";   #ip / usernames
+chomp($temp);
+}
+
+my $total = `/etc/scripts/cache/ToonOverzichtIP | grep -c -E "$temp"`;
 if($total == 1){
-print "<h4>Er is in 1 resultaat: </h4>";
+print "<h4>Er is 1 resultaat: </h4>";
 }else{
 
-print "<h4>Er zijn in $total resultaten: </h4>";
+print "<h4>Er zijn $total resultaten: </h4>";
 }
-my $lines = `/etc/scripts/cache/ToonOverzichtIP | grep $ARGV[0]`;
+my $lines = `/etc/scripts/cache/ToonOverzichtIP | grep -E "$temp"`;
 print $lines;

@@ -1,26 +1,32 @@
 #!/usr/bin/perl
+
+# 01/03/2015
+# Dit script genereert een overzicht van alle APs (met gegevens : APnaam, vlangroup, ip, switchnaam , ...)
+# (voorbeeld http://193.191.187.33/monitoring/overviewaps.php)
+# Om het overzicht te tonen worden alle gegevens uit de cache gehaald ( hash 'aphashes') die er d.m.v. het script APInfoincache ingestoken zijn.
+# @keysbackup wordt gebruikt tijdens de update van de cache, zodat er gedurende de update geen lege pagina getoond wordt, vanaf dat aphashes 
+# geupdate is, wordt de backuphash (aphashesbackup) verwijderd en iphashes gebruikt.
 use diagnostics;
 use strict;
 use warnings;
 use Redis::Client;
-my $client = Redis::Client->new( host => 'localhost', port => 6379 );
-
-my @keys = $client->hkeys( 'aphashes' );
+my $client = Redis::Client->new( host => 'localhost', port => 6379 ); #Connectie Redis
 
 
+my @keys = $client->hkeys( 'aphashes' ); # standaard worden de keys van aphashes opgehaal
 my $hash="aphashes";
-my @keysbackup = $client->hkeys( 'aphashesbackup' );
+my @keysbackup = $client->hkeys( 'aphashesbackup' ); # keys uit iphashesbackup ophalen (indien ze niet bestaan is @keysbackup leeg)
 
-if(@keysbackup){
+if(@keysbackup){ #als er een backup bestaat -> update is bezig  -> gebruik de backup
 @keys = @keysbackup;
 $hash = "aphashesbackup";
 }
 
 
-
+# hoofdingen tabel + sorteerbaar + zoekveld
 print "<div class='form-group'>";
-print "<label>Zoeken in de tabel. </label>";
-print "<input type='text' class='form-control' id='search' placeholder='Typ simpele regexen om te zoeken in de tabel. Voor op \"default location\" te zoeken: Typ \"location\" ipv \"default location\".'>";
+print "<label>Zoeken in de tabel.</label>";
+print "<input type='text' class='form-control' id='search' placeholder='Typ simpele zoektermen om te zoeken in de tabel.'>";
 print "</div>";
 print "<script src='sorttable.js'></script>";
 print "<div class='row'>";
@@ -33,8 +39,10 @@ print "<th>5GHz</th>\n";
 print "<th>Total</th>\n";
 print "<th>Locatie</th>\n";
 print "<th>Vlan-Group</th>\n";
-print "<th class='sorttable_nosort'>IP AP</th>";
-print "<th>MAC AP</th>";
+print "<th class='sorttable_nosort'>IP AP</th>\n";
+#print "<th>MAC AP</th>\n";
+print "<th>Switch naam</th>\n";
+print "<th>Switch port</th>\n";
 print "</tr>\n";
 my $key;
 my $temp;
@@ -42,18 +50,21 @@ my $total;
 my $total24;
 my $total5;
 
+# elke waarde in de cache wordt in de tabel gestoken.
 foreach $key (@keys){  # key = APname
 
 
-my $values = $client->hget( $hash, $key );
-my @value=  split /,/, $values;
+	my $values = $client->hget( $hash, $key );
+	my @value=  split /,/, $values;
 
+# geheugensteuntje values
+#$values= "$APNames,$MACAPS,$usersperap,$usersperap,$locations,$ipforAP,$apvlan,$switchnames,$switchport
+#              0      1         2           3           4          5       6         7           8  
 
-#$values= "$APNames[$i],$MACAPS[$i],$usersperap[$j],$usersperap[$j+1],$locations[$i],$ipforAP[$i]";
 	print "\n";
         print "<tr>";
         print "<td> <a href='/monitoring/toonclientsperap.php?AP=$value[0]'>$value[0]</td>";
-        print "<td>$value[2]</td>";
+        print "<td id='table'>$value[2]</td>";
         print "<td>$value[3]</td>";
         $temp = $value[2] + $value[3];
         $total = $total + $temp;
@@ -64,38 +75,15 @@ my @value=  split /,/, $values;
         print "<td>$value[4]</td>";
         print "<td>$value[6]</td>";
         print "<td>$value[5]</td>";
-        print "<td>$value[1]</td>";
+        #print "<td>$value[1]</td>";
+        print "<td>$value[7]</td>";
+        print "<td>$value[8]</td>";
         print "</tr>";
 
 
 }
 
-#my $limit = scalar(@snmpgetinfoAPName);
-
-#for(my $i=0 ; $i < $limit ; $i++) {
-#	$j = ($i*2);
-#	chomp($snmpgetinfoAPName[$i]);
-#	chomp($usersperap[$i]);
-#	print "\n";
-#	print "<tr>";
-#	print "<td> <a href='/monitoring/toonclientsperap.php?AP=$snmpgetinfoAPName[$i]'>$snmpgetinfoAPName[$i]</td>";
-#	print "<td> <a href='/munin/WLC/WLC/snmp_wlc_ap_$snmpgetinfoAPName[$i]_bsnApIfNoOfUsers.html'> Grafiek $snmpgetinfoAPName[$i] No Of Users</td>";
-#	print "<td> <a href='/munin/WLC/WLC/snmp_wlc_ap_$snmpgetinfoAPName[$i]_bsnAPIfLoad.html'> Grafiek $snmpgetinfoAPName[$i] Detailed</td>";
-#	print "<td>$usersperap[$j]</td>";
-#	print "<td>$usersperap[$j+1]</td>";
-#	$temp = $usersperap[$j+1] + $usersperap[$j];
-#	$total = $total + $temp;
-#	$total24 = $total24 + $usersperap[$j];
-#	$total5 = $total5 + $usersperap[$j+1];
-
-#	print "<td>$temp</td>";
-#	print "<td>$snmplocationsAP[$i]</td>";
-#	print "<td>$ipforAP[$i]</td>";
-#	print "<td>$snmpgetinfoMACAP[$i]</td>";
-#	print "</tr>";
-#}
-
-print "<tfoot><tr><td><h3>Totaal</h3></td><td></td><td></td><td><h3>$total24</h3></td><td><h3>$total5</h3></td><td><h3>$total</h3></td><td></td><tr></tfoot>";
+print "<tfoot><tr><td><h3>Totaal</h3></td><td><h3>$total24</h3></td><td><h3>$total5</h3></td><td><h3>$total</h3></td><td></td><tr></tfoot>";
 print "\n</table></div></div>\n";
 print "</body>\n";
 print "</html>\n";

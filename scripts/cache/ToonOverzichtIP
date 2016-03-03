@@ -1,66 +1,72 @@
 #!/usr/bin/perl
+
+# 01/03/2015
+# Dit script genereert een gedetailleerd overzicht van een bepaalde user (op basis van IP)
+# (voorbeeld http://193.191.187.33/monitoring/toonipinfo.php?IP=10.25.67.205)
+# De info wordt uit de cache gehaald ( hash iphashes) en in de tabel gestoken.
+
+# @keysbackup wordt gebruikt tijdens de update van de cache, zodat er gedurende de update geen lege pagina getoond wordt, vanaf dat iphashes 
+# geupdate is, wordt de backuphash (iphashesbackup) verwijderd en iphashes gebruikt.
+
 use diagnostics;
 use strict;
 use warnings;
-use Switch;
+use Switch;  # module switch voor protocol (zie onderaan)
 use Redis::Client;
-my $client = Redis::Client->new( host => 'localhost', port => 6379 );
-my @keys = $client->hkeys( 'iphashes' );
+my $client = Redis::Client->new( host => 'localhost', port => 6379 ); # Connectie Redis
+
+my $hash="iphashes";
+my @keys = $client->hkeys( 'iphashes' );  # standaard worden de keys van iphashes opgehaald
+my @keysbackup = $client->hkeys( 'iphashesbackup' ); # keys uit iphashesbackup ophalen (indien ze niet bestaan is @keysbackup leeg)
+
+if(@keysbackup){  #als er een backup bestaat -> update is bezig  -> gebruik de backup
+@keys = @keysbackup;
+$hash = "iphashesbackup";
+}
 
 
-#ophalen welk protocol de clients gebruiken
-#my $protocol= ".1.3.6.1.4.1.14179.2.1.4.1.25" ; #bsnMobileStationProtocol 
-#my @snmpgetinfoProtocol = `/usr/bin/snmpwalk -v 2c -c public $nas $protocol | cut -d ' ' -f4`;
-
-#ophalen bytes received / sent 
-#my $bytesreceived = ".1.3.6.1.4.1.14179.2.1.6.1.2";
-#my @snmpgetinfoBytesReceived = `/usr/bin/snmpwalk -v 2c -c public $nas $bytesreceived | cut -d ':' -f2`;
-
-#my $bytessent = ".1.3.6.1.4.1.14179.2.1.6.1.3";
-#my @snmpgetinfoBytesSent = `/usr/bin/snmpwalk -v 2c -c public $nas $bytessent | cut -d ':' -f2`;
-
-
+# elke waarde in de cache wordt in de tabel gestoken.
 my $key;
-foreach $key (@keys){  # key = APname
+foreach $key (@keys){  
 
-        my $values = $client->hget( 'iphashes', $key );
-        my @value=  split /,/, $values;
+        my $values = $client->hget( $hash , $key ); # ophalen values
+        my @value=  split /,/, $values; # splitten op ","
 
-
-
+# geheugensteuntje ( uit IPInfoInCache)
 #            0           1            2          3          4         5         6           7              8
 #$values ="$IPs[$i],$usernames[$i],$MACs[$i],$ssids[$i],$APMacs[$i],$nameAP,$protocol, $bytesreceives, $bytesssent";
 
+# printen tabel + waardes
 	print "\n";
 	print " <div class='row'>";
-        print "<div class='col-md-8'>";
-	print  "<table class='table table-striped'>";
+        print "<div class='col-md-6'>";
+	print  "<table class='table table-condensed table-responsive table-striped'>";
         print "<tbody>";
 	
 	print "<th> IP Address </th>";
-	print "<td> $value[0]</td></tr>";
+	print "<td align='right'> $value[0]</td></tr>";
 
 	print "<th> Username </th>";
-	print "<td> $value[1]</td></tr>";
+	print "<td align='right'> $value[1]</td></tr>";
 
 
 	print "<tr> <th> MAC Address </th>";
-	print "<td> $value[2] </td> </tr>";
+	print "<td align='right'> $value[2] </td> </tr>";
 
 	print "<tr><th> SSID </th>";
-	print "<td><a href='/monitoring/toonclientsperssid.php?SSID=$value[3]'>$value[3]</a></td></tr>";
+	print "<td align='right'><a href='/monitoring/toonclientsperssid.php?SSID=$value[3]'>$value[3]</a></td></tr>";
 
-	print "<tr><th> AP MAC (Base Radio) </th>";
-	print "<td>$value[4]</td></tr>";
+	print "<tr><th> AP MAC  </th>";
+	print "<td align='right'>$value[4]</td></tr>";
 
 	print "<tr><th> AP Name </th>";
-	print "<td> <a href='/monitoring/toonclientsperap.php?AP=value[5]'>$value[5]</td></tr>";
+	print "<td align='right'> <a href='/monitoring/toonclientsperap.php?AP=$value[5]'>$value[5]</td></tr>";
 
 	print "<tr><th> Protocol  </th>";
-	print "<td>";
+	print "<td align='right'>";
 
-#dot11a(1), dot11b(2), dot11g(3), unknown(4), mobile(5)
-
+#dot11a(1), dot11b(2), dot11g(3), unknown(4), mobile(5), dot11n24(6), dot11n5(7)
+# switch gebruikt om codes die we terugkrijgen uit protocol om te zetten in string-waardes.
 	switch($value[6]){
   		 case 1            { print "dot11a (1)" }
    		 case 2            { print "dot11b (2)" }
@@ -74,11 +80,11 @@ foreach $key (@keys){  # key = APname
 
 	print "</td></tr>";
 	print "<tr><th> Bytes Received </th>";
-	print "<td>$value[7]</td></tr>";
+	print "<td align='right'>$value[7]</td></tr>";
 
 	print "<tr><th> Bytes Sent </th>";
-	print "<td>$value[8]</td></tr>";
+	print "<td align='right'>$value[8]</td></tr>";
 
-	print "</tbody></table></div></div>";
+	print "</tbody></table></div></div><br/><br/>";
 
 }

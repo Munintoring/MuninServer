@@ -1,4 +1,9 @@
 #!/usr/bin/perl
+
+# 02/03/2015
+# Deze plugin berekent de users per SSID en tekent de grafiek.
+# Via SNMPwalks wordt deze info opgehaald en in arrays gestored. Omdat het aantal SSID relatief consistent blijft 
+# kunnen we dit zo opvragen.
 use diagnostics;
 use strict;
 use warnings;
@@ -20,7 +25,7 @@ print "graph_args --base 1000 -l 0\n";
 print "graph_vlabel clients\n";
 print "graph_scale no\n";
 print "graph_category WLC\n";
-
+#print "update_rate 600\n";
 
 	for (my $i=0 ; $i < $limit ; $i++)
 	{

@@ -1,0 +1,110 @@
+#!/usr/bin/perl
+
+# 01/03/2015
+# Dit script genereert de plugins die Munin gebruikt om zijn grafieken over een bepaalde AP te maken.
+# De values die Munin nodig heeft worden opgehaald uit de cache (hash 'apmunin').
+# Dit script is dus de basis voor elk AP-plugin, sync_ap zal er voor zorgen dat er voor elke AP een script gegenereerd wordt. (zie sync_ap) 
+use diagnostics;
+use strict;
+use warnings;
+use Redis::Client;
+my $client = Redis::Client->new( host => 'localhost', port => 6379 ); #connectie Redis
+my $values;
+
+# Uitlezen van APname en action
+my $APName=undef;
+my $action = undef;
+$0 =~ /snmp_wlc_ap_(.+)_(.+)$/;
+unless (($APName = $1) && ($action = $2)) {
+  exit 2;
+}
+
+$values = $client->hget('apmunin', $APName ); # opvragen van de value op basis van $APName
+my @value=  split /,/, $values; # splitten op ","
+
+my $bsnAPName                   = $value[0];
+my $bsnAPGroupVlanName          = $value[2];
+my $bsnApIpAddress              = $value[3];
+my $bsnAPLocation               = $value[4];
+my $bsnAPModel                  = $value[5];
+my $bsnAPSerialNumber           = $value[6];
+my $loadRx24                    = $value[7];
+my $loadRx5                     = $value[8];
+my $loadTx24                    = $value[9];
+my $loadTx5                     = $value[10];
+my $loadChan24                  = $value[11];
+my $loadChan5                   = $value[12];
+my $clients24                   = $value[13];
+my $clients5                    = $value[14];
+my $poor_clients24              = $value[15];
+my $poor_clients5               = $value[16];
+
+#geheugensteuntje:
+#              0       1              2              3                 4            5            6                 7         
+#$values ="$APName,$ApMacDec,$bsnAPGroupVlanName,$bsnApIpAddress,$bsnAPLocation,$bsnAPModel,$bsnAPSerialNumber,$loadRx24,
+#$loadRx5,$loadTx24,$loadTx5,$loadChan24,$loadChan5,$clients24,$clients5,$poor_clients24,$poor_clients5";
+#   8        9        10         11         12         13          14        15              16
+
+if ($action =~ 'bsnApIfNoOfUsers') {
+
+	#printen van grafiek + waardes
+	if ($ARGV[0] && $ARGV[0] eq "config") {
+	  
+	  print "graph_args --base 1000 -l 0\n";
+	  print "graph_title $APName\n";
+	  print "graph_category $bsnAPGroupVlanName\n";
+	 # print "graph_info AP name/group/ip: $APName/$bsnAPGroupVlanName/$bsnApIpAddress<br>AP Location: $bsnAPLocation<br>AP Model/Serial: $bsnAPModel/$bsnAPSerialNumber<br>\n";
+	  print "graph_vlabel Clients\n";
+	  print "graph_scale no\n";
+	  print "clients24.label Total clients on 2.4 GHz\n";
+	  print "clients5.label Total clients on 5 GHz\n";
+	  print "clients24.draw AREA\n";
+	  print "clients5.draw AREA\n";
+	  exit;
+	}
+	print "clients24.value " . "$clients24" . "\n";
+	print "clients5.value " . "$clients5" . "\n";
+}
+
+if ($action =~ 'bsnAPIfLoad') {
+	
+	if ($ARGV[0] && $ARGV[0] eq "config") {
+	  print "graph_args --base 1000 -l 0\n";
+	  print "graph_title $APName detail\n";
+	  print "graph_category $bsnAPGroupVlanName\n";
+	  print "graph_vlabel % + abs\n";
+	  print "loadRx24.label RX load on 2.4 GHz radio\n";
+          print "loadRx5.label RX load on 5 GHz radio\n";
+	  print "loadTx24.label TX load on 2.4 GHz radio\n";
+          print "loadTx5.label TX load on 5 GHz radio\n";
+          print "loadChan24.label channel utilization on 2.4 GHz radio\n";
+          print "loadChan5.label channel utilization on 5 GHz radio\n";
+          print "clients24.label clients at mi on 2.4 GHz radio\n";
+          print "clients5.label clients at mi on 5 GHz radio\n";
+          print "poor_clients24.label clients with poor SNR on 2.4 GHz radio\n";
+          print "poor_clients5.label clients with poor SNR on 5 GHz radio\n";
+          print "loadRx24.draw AREA\n";
+          print "loadRx5.draw AREA\n";
+          print "loadTx24.draw AREA\n";
+          print "loadTx5.draw AREA\n";
+          print "loadChan24.draw AREA\n";
+          print "loadChan5.draw AREA\n";
+          print "clients24.draw AREA\n";
+          print "clients5.draw AREA\n";
+          print "poor_clients24.draw AREA\n";
+          print "poor_clients5.draw AREA\n";
+
+	  exit;
+	}
+	print "loadRx24.value " . "$loadRx24" . "\n";
+	print "loadRx5.value " . "$loadRx5" . "\n";
+	print "loadTx24.value " . "$loadTx24" . "\n";
+	print "loadTx5.value " . "$loadTx5" . "\n";
+	print "loadChan24.value " . "$loadChan24" . "\n";
+	print "loadChan5.value " . "$loadChan5" . "\n";
+	print "clients24.value " . "$clients24" . "\n";
+	print "clients5.value " . "$clients5" . "\n";
+	print "poor_clients24.value " . "$poor_clients24" . "\n";
+	print "poor_clients5.value " . "$poor_clients5" . "\n";
+}
+

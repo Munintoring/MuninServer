@@ -1,16 +1,18 @@
 #!/usr/bin/perl
+
+# 01/03/2016
+# Dit is een oud script en is vervangen door ToonAlgemeenOverzichtCache (in /etc/scripts/cache)
+# In dit script wordt alle info opgehaald d.m.v. SNMPwalks en in arrays gestoken en afgeprint d.m.v. een for-loop.
+# Deze aanpak is fout en genereert dus een foutief overzicht wanneer er users wegvallen of bijkomen.
 use diagnostics;
 use strict;
 use warnings;
 
-#my $nas ="192.168.1.2";
 my $nas=`/etc/scripts/inputIP`;
 chomp($nas);
 
 my $IP	 =".1.3.6.1.4.1.14179.2.1.4.1.2"; #$bsnMobileStationIpAddress 
 my @snmpgetinfoIP = `/usr/bin/snmpwalk -v 2c -c public $nas $IP | cut -d ' ' -f4`;
-
-#print @snmpgetinfoIP;
 
 my $username = ".1.3.6.1.4.1.14179.2.1.4.1.3";
 my @snmpgetinfoUsername = `/usr/bin/snmpwalk -v 2c -c public $nas $username | cut -d '"' -f2`;
@@ -18,19 +20,12 @@ my @snmpgetinfoUsername = `/usr/bin/snmpwalk -v 2c -c public $nas $username | cu
 my $MAC =  ".1.3.6.1.4.1.14179.2.1.4.1.1"; #bsnMobileStationMacAddress
 my @snmpgetinfoMAC = `/usr/bin/snmpwalk -v 2c -c public $nas $MAC | cut -d ':' -f2`;
 
-#print @snmpgetinfoMAC;
-
 my $Ssid = ".1.3.6.1.4.1.14179.2.1.4.1.7"; #bsnMobileStationSsid
 my @snmpgetinfoSsid = `/usr/bin/snmpwalk -v 2c -c public $nas $Ssid |cut -d '"' -f2 `;
-
-#print @snmpgetinfoAPSsid;
 
 my $APMacAddress= ".1.3.6.1.4.1.14179.2.1.4.1.4"; #bsnMobileStationAPMacAddr
 my @snmpgetinfoAPMacAddress = `/usr/bin/snmpwalk -v 2c -c public $nas $APMacAddress | cut -d ':' -f2`;
 
-# dit is het Base Radio MAC
-#  bsnAPDot3MacAddress	1.3.6.1.4.1.14179.2.2.1.1.1   vergelijken hiermee en zo de APname bepalen?
-#Test voor het weergeven van AP Name
 my $APName = ".1.3.6.1.4.1.14179.2.2.1.1.3"; #bsnAPName
 my @snmpAPName = `/usr/bin/snmpwalk -v 2c -c public $nas $APName |cut -d '"' -f2 `;
 
@@ -39,6 +34,9 @@ my @snmpDot3MacAddress = `/usr/bin/snmpwalk -v 2c -c public $nas $APDot3MacAddre
 
 my $end = scalar(@snmpAPName);
 
+# In deze hashmap steken we als key het Dot3MacAddress en als value de APName, zodat we deze op die manier kunnen opvragen.
+# De APName waarop het mobilestation zit kan niet rechtstreeks opgehaald worden, maar wel het MAC-adres. 
+# We geven dus het opgehaalde MAC-adres mee in de hashmap om de APName te verkrijgen.
 my %hashAP;
 for(my $j=0;$j< $end; $j++){
 	chomp($snmpDot3MacAddress[$j]);
@@ -46,6 +44,7 @@ for(my $j=0;$j< $end; $j++){
 	$hashAP{$snmpDot3MacAddress[$j]} = "$snmpAPName[$j]";
 }
 
+#hoofdingen tabel + sorteerbaar
 print "<script src='sorttable.js'></script>";
 print "<div class='row'>";
 print "<div class='col-md-12'>";
@@ -61,14 +60,6 @@ print "<th>APName</th>";
 print "</tr>";
 
 my $limit = scalar(@snmpgetinfoIP);
-#my $limit1 = scalar(@snmpgetinfoUsername);
-#my $limit2 = scalar(@snmpgetinfoUsername)
-#my $limit3 = scalar(@snmpgetinfoMAC);
-#my $limit4 = scalar(@snmpgetinfoSsid);
-#my $limit5 = scalar(@snmpgetinfoAPMacAddress);
-#my $limit6 = scalar(@hashAP);
-
-#print "echo $limit $limit1 $limit2 $limit3 $limit4 $limit5 $limit6";
 
 for(my $i=0 ; $i < $limit ; $i++) {
 	
@@ -91,6 +82,4 @@ for(my $i=0 ; $i < $limit ; $i++) {
 }
 
 print "\n</table></div></div>\n";
-#print "</body>\n";
-#print "</html>\n";
 

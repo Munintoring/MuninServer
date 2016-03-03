@@ -1,0 +1,12 @@
+#!/bin/bash
+# Dit script genereert de snmp_wlc_ap_x_x  munin plugin voor elke AP.
+# Het maakt een symlink gebaseerd op snmp_wlc_ap__. Alle munin-plugins staan in de map /etc/scripts/ap/munin. 
+# sync_ap zal zorgen voor de symlink naar /etc/munin/plugins
+
+ls /etc/scripts/ap/munin/ | grep -P "snmp_wlc_ap_.*(bsnApIfNoOfUsers|bsnAPIfLoad)" | xargs -i rm /etc/scripts/ap/munin/{}
+/usr/bin/snmpwalk -v 2c -c public 10.25.0.5 1.3.6.1.4.1.14179.2.2.1.1.3 | cut -d '"' -f2 | xargs -i ln -s /etc/scripts/ap/snmp_wlc_ap__ /etc/scripts/ap/munin/snmp_wlc_ap_{}_bsnApIfNoOfUsers
+/usr/bin/snmpwalk -v 2c -c public 10.25.0.5 1.3.6.1.4.1.14179.2.2.1.1.3 | cut -d '"' -f2 | xargs -i ln -s /etc/scripts/ap/snmp_wlc_ap__ /etc/scripts/ap/munin/snmp_wlc_ap_{}_bsnAPIfLoad
+/etc/init.d/munin-node restart
+
+
+

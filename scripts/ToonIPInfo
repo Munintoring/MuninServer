@@ -1,19 +1,26 @@
 #!/usr/bin/perl
+
+#01/03/2016
+#Dit script is vervangen door ToonIPInfo (in /etc/scripts/cache)
+#Dit script wordt gebruikt om te zoeken op IP-adressen/Mac-adressen/... te zoeken.
+
 use diagnostics;
 use strict;
 use warnings;
+
 #temp = IP of MAC of username
 my $temp="";
-if($ARGV[1] && $ARGV[2] && $ARGV[3] && $ARGV[4] && $ARGV[5]){
+
+if($ARGV[1] && $ARGV[2] && $ARGV[3] && $ARGV[4] && $ARGV[5]){  # komt overeen met een MAC (spaties)
 $temp = "$ARGV[0] "."$ARGV[1] "."$ARGV[2] "."$ARGV[3] "."$ARGV[4] "."$ARGV[5]";
 }elsif(!$ARGV[0]){
 
 print "Gelieve een waarde mee te geven";
 }else{
-$temp = "$ARGV[0]";
+$temp = "$ARGV[0]";   #ip / usernames
 chomp($temp);
-
-my $lines = `/etc/scripts/ToonOverzichtIP | grep "$temp"`;
-print $lines;
 }
+
+my $lines = `/etc/scripts/ToonOverzichtIP | grep "$temp"`; #greppen van overzichtIP
+print $lines;
 

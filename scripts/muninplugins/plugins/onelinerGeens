@@ -1,0 +1,2 @@
+time find . -iname 'WLCAPinfoincache_*' -printf './%f\0' | xargs -L1 -0 -P10 sh -c
+

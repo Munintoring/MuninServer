@@ -1,13 +1,20 @@
 #!/usr/bin/perl
+
+#01/03/2015
+
+# Dit script genereert een overzicht van een bepaald SSIDS en het aantal clients erop (d.m.v. snmpwalks)
+# (voorbeeld http://193.191.187.33/monitoring/toonclientsperssid.php?SSID=eduroam)
+# Er wordt gegrepped op SSID in het AlgemeenOverzichtCache, alle users die op bijvoorbeeld eduroam zitten worden getoond.
 use diagnostics;
 use strict;
 use warnings;
+        print "<script src='sorttable.js'></script>";
 
 print "<div class='row'>";
 print "<div class='col-md-12'>";
-print  "<table class='table table-striped'>";
+print  "<table class='sortable table table-striped'>";
 print "<tr>\n";
-print "<th>IP-address</th>\n";
+print "<th class='sorttable_nosort'>IP-address</th>\n";
 print "<th>Username</th>\n";
 print "<th>MAC-address </th>\n";
 print "<th>SSID</th>\n";

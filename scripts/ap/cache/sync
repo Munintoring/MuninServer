@@ -1,0 +1,7 @@
+#!/bin/bash
+# Dit script voert elk script in deze map parallel uit (alle gegevens worden in de cache gezet).
+cd /etc/scripts/ap/cache
+#time find /etc/scripts/ap/cache -iname 'WLCAPinfoincache_*' -printf './%f\0' | xargs -L1 -0 -P10 sh -c
+time find . -iname 'WLCAPinfoincache_*' -printf './%f\0' | xargs -L1 -0 -P10 sh -c
+
+`date > datelastsync`

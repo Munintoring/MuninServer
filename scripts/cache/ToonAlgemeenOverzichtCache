@@ -1,32 +1,41 @@
 #!/usr/bin/perl
+
+# 01/03/2015
+# Dit script genereert een overzicht van alle users die online zijn (met gegevens : IP,username,MAC,SSID,...)
+# (voorbeeld http://193.191.187.33/monitoring/overview.php)
+# Om het overzicht te tonen worden alle gegevens uit de cache gehaald ( hash 'iphashes) die er d.m.v. het script IPInfoincache ingestoken zijn.
+# @keysbackup wordt gebruikt tijdens de update van de cache, zodat er gedurende de update geen lege pagina getoond wordt, vanaf dat iphashes 
+# geupdate is, wordt de backuphash (iphashesbackup) verwijderd en iphashes gebruikt.
 use diagnostics;
 use strict;
 use warnings;
 use Redis::Client;
-my $client = Redis::Client->new( host => 'localhost', port => 6379 );
+my $client = Redis::Client->new( host => 'localhost', port => 6379 ); # Connectie Redis
 
 
-my $hash="iphashes";
-my @keys = $client->hkeys( 'iphashes' );
-my @keysbackup = $client->hkeys( 'iphashesbackup' );
+my $hash="iphashes"; 
+my @keys = $client->hkeys( 'iphashes' );  # standaard worden de keys van iphashes opgehaald
+my @keysbackup = $client->hkeys( 'iphashesbackup' ); # keys uit iphashesbackup ophalen (indien ze niet bestaan is @keysbackup leeg)
 
-if(@keysbackup){
+if(@keysbackup){  #als er een backup bestaat -> update is bezig  -> gebruik de backup
 @keys = @keysbackup;
 $hash = "iphashesbackup";
 }
 
+# hoofdingen tabel + sorteerbaar + zoekbalkje
 print "<div class='form-group'>";
 print "<label>Zoeken in de tabel</label>";
-print "<input type='text' class='form-control' id='search' placeholder='Typ simpele zoektermen in om te zoeken in de tabel'>";
+print "<input type='text' class='form-control' id='search' placeholder='Typ simpele zoektermen in om te zoeken in de tabel.'>";
 print "</div>";
 print "<script src='sorttable.js'></script>";
 
 print "<div class='row'>";
 print "<div class='col-md-12'>";
-print "<table id='table' class='sortable table table-striped'>";
+print "<table id='table' class='sortable table table-responsive table-condensed table-striped'>";
 print "<tr>\n";
 print "<th class='sorttable_nosort'>IP-address</th>\n";
 print "<th>Name</th>\n";
+print "<th>Aantal </th>\n";
 print "<th>MAC-address </th>";
 print "<th>SSID</th>";		
 print "<th>MAC-AP (Base Radio MAC)</th>";
@@ -34,20 +43,23 @@ print "<th>APName</th>";
 print "</tr>";
 
 
-
+# elke waarde in de cache wordt in de tabel gestoken.
 my $key;	
-foreach $key (@keys){  # key = APname
+foreach $key (@keys){ 
 
 		
 	my $values = $client->hget( $hash , $key );
 	my @value=  split /,/, $values;
 
-#$values ="$IPs[$i],$usernames[$i],$MACs[$i],$ssids[$i],$APMacs[$i],$nameAP";
+# geheugensteuntje (uit IPinfoincache)
+# $values ="$IPlist[$i],$userlist[$i],$MAClist[$i],$ssidlist[$i],$macaplist[$i],$nameap,$protocollist[$i],$bytesrelist[$i],$bytesselist[$i],$hashusers{$userlist[$i]}";
+#               0           1              2           3              4            5           6               7                8                   9
 
 	print "\n";
 	print "<tr>";
 	print "<td><a href='/monitoring/toonipinfo.php?IP=$value[0]'>$value[0]</a></td>";
-	print "<td> $value[1] </td>";
+	print "<td><a href='/monitoring/toonipinfo.php?IP=$value[1]'> $value[1]</a> </td>";
+	print "<td> $value[9] </td>";
 	print "<td> $value[2] </td>";
 	print "<td><a href='/monitoring/toonclientsperssid.php?SSID=$value[3]'>$value[3]</a></td>";
 	print "<td>$value[4]</td>";
@@ -56,7 +68,5 @@ foreach $key (@keys){  # key = APname
 }
 
 print "\n</table></div></div>\n";
-#print "</body>\n";
-#print "</html>\n";
 print "<script src='search.js'></script>";
 	

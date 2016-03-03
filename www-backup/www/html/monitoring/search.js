@@ -1,12 +1,9 @@
 var $rows = $('#table tr');
 $('#search').keyup(function() {
-    
-    var val = '^(?=.*\\b' + $.trim($(this).val()).split(/\s+/).join('\\b)(?=.*\\b') + ').*$',
-        reg = RegExp(val, 'i'),
-        text;
+    var val = $.trim($(this).val()).replace(/ +/g, ' ').toLowerCase();
     
     $rows.show().filter(function() {
-        text = $(this).text().replace(/\s+/g, ' ');
-        return !reg.test(text);
+        var text = $(this).text().replace(/\s+/g, ' ').toLowerCase();
+        return !~text.indexOf(val);
     }).hide();
 });
